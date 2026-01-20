@@ -57,7 +57,7 @@
         <h2>Your Files</h2>
         <button 
           v-if="files.length > 0" 
-          @click="loadFiles" 
+          @click="refreshFiles" 
           class="refresh-btn"
           :disabled="loading"
         >
@@ -170,7 +170,7 @@
       <!-- Pagination -->
       <div v-if="pagination.total_pages > 1" class="pagination">
         <button 
-          @click="loadFiles(pagination.current_page - 1)"
+          @click="loadFiles(Math.max(1, pagination.current_page - 1))"
           :disabled="pagination.current_page === 1 || loading"
           class="page-btn"
         >
@@ -180,7 +180,7 @@
           Page {{ pagination.current_page }} of {{ pagination.total_pages }}
         </span>
         <button 
-          @click="loadFiles(pagination.current_page + 1)"
+          @click="loadFiles(Math.min(pagination.total_pages, pagination.current_page + 1))"
           :disabled="pagination.current_page >= pagination.total_pages || loading"
           class="page-btn"
         >
@@ -232,6 +232,9 @@ export default {
   methods: {
     // Load files from API
     async loadFiles(page = 1) {
+      // Validate page parameter
+      page = Math.max(1, parseInt(page) || 1);
+      
       this.loading = true;
       this.uploadError = null;
       
@@ -247,6 +250,14 @@ export default {
         this.files = data.files || [];
         this.pagination = data.pagination || this.pagination;
         
+        // Ensure pagination values are valid
+        if (this.pagination.current_page < 1) {
+          this.pagination.current_page = 1;
+        }
+        if (this.pagination.total_pages < 1) {
+          this.pagination.total_pages = 1;
+        }
+        
         // Start polling for processing files
         this.startPollingForProcessingFiles();
         
@@ -260,6 +271,12 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+    
+    // Refresh files - reload current page
+    refreshFiles() {
+      const currentPage = this.pagination.current_page || 1;
+      this.loadFiles(currentPage);
     },
     
     // Handle file selection
@@ -329,8 +346,9 @@ export default {
         const uploadedFile = response.data.data || response.data;
         this.$toast.success('File uploaded successfully!');
         
-        // Reload files list
-        await this.loadFiles(this.pagination.current_page);
+        // Reload files list - use current page or default to 1
+        const currentPage = this.pagination.current_page || 1;
+        await this.loadFiles(currentPage);
         
         // Start polling for this file if it's processing
         if (this.isProcessing(uploadedFile)) {
@@ -371,8 +389,9 @@ export default {
         // Stop polling for this file
         this.stopPolling(file.id);
         
-        // Reload files list
-        await this.loadFiles(this.pagination.current_page);
+        // Reload files list - use current page or default to 1
+        const currentPage = this.pagination.current_page || 1;
+        await this.loadFiles(currentPage);
         
       } catch (error) {
         console.error('Delete failed:', error);
