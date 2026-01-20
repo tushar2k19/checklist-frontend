@@ -362,14 +362,28 @@ export default {
         if (error.response) {
           const errorData = error.response.data;
           if (errorData.error) {
-            errorMessage = errorData.error.message || errorData.error.details || errorMessage;
+            // Handle duplicate file error specifically
+            if (errorData.error.code === 'duplicate_file' || error.response.status === 409) {
+              errorMessage = errorData.error.message || 'This file has already been uploaded.';
+              // Show a more informative message for duplicate files
+              this.$toast.warning(errorMessage, {
+                duration: 6000 // Show for 6 seconds
+              });
+            } else {
+              errorMessage = errorData.error.message || errorData.error.details || errorMessage;
+              this.$toast.error(errorMessage);
+            }
+          } else {
+            this.$toast.error(errorMessage);
           }
         } else if (error.code === 'ECONNABORTED') {
           errorMessage = 'Upload timeout. Please try again with a smaller file.';
+          this.$toast.error(errorMessage);
+        } else {
+          this.$toast.error(errorMessage);
         }
         
         this.uploadError = errorMessage;
-        this.$toast.error(errorMessage);
       } finally {
         this.isUploading = false;
         this.uploadProgressMessage = 'Uploading file...';
