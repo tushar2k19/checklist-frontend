@@ -4,6 +4,7 @@ import Home from '../components/Home.vue'
 import Signin from '../components/Signin.vue'
 import Dashboard from '../components/Dashboard.vue'
 import ChecklistAnalyzer from '../components/ChecklistAnalyzer.vue'
+import FilesPage from '../components/FilesPage.vue'
 import NotFound from '../components/NotFound.vue'
 
 
@@ -28,6 +29,12 @@ const router = new Router({
       path: '/checklist',
       name: 'ChecklistAnalyzer',
       component: ChecklistAnalyzer,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/files',
+      name: 'FilesPage',
+      component: FilesPage,
       meta: { requiresAuth: true }
     },
     {
