@@ -415,11 +415,10 @@ export default {
     
     // Re-evaluate file (navigate to evaluation page)
     reEvaluate(file) {
-      // TODO: Navigate to evaluation page with file pre-selected
-      // For now, just show a message
-      this.$toast.info('Re-evaluate functionality will be available on the evaluation page');
-      // This will be implemented when NewEvaluationPage is created
-      // this.$router.push({ name: 'NewEvaluation', params: { fileId: file.id } });
+      this.$router.push({ 
+        name: 'NewEvaluation', 
+        query: { fileId: file.id } 
+      });
     },
     
     // Poll status for a specific file

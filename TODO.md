@@ -230,7 +230,7 @@ Note: We currently ingest 5 DPR PDFs. More can be added later without changing s
 ## Environment Variables
 ```
 OPENAI_API_KEY=
-OPENAI_ASSISTANT_ID=
+Checklist_ASSISTANT_ID=
 OPENAI_VECTOR_STORE_ID=
 OPENAI_MODEL=gpt-4o-mini
 SEARCH_PROVIDER=tavily
