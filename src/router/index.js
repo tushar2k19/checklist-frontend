@@ -1,8 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from '../components/Home.vue'
 import Signin from '../components/Signin.vue'
-import Dashboard from '../components/Dashboard.vue'
 import ChecklistAnalyzer from '../components/ChecklistAnalyzer.vue'
 import FilesPage from '../components/FilesPage.vue'
 import NewEvaluationPage from '../components/NewEvaluationPage.vue'
@@ -19,15 +17,7 @@ const router = new Router({
   routes: [
     {
       path: '/',
-      name: 'Home',
-      component: Home,
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/dashboard',
-      name: 'Dashboard',
-      component: Dashboard,
-      meta: { requiresAuth: true }
+      redirect: '/evaluations'
     },
     {
       path: '/checklist',
@@ -121,7 +111,7 @@ router.beforeEach((to, from, next) => {
     }
   } else if (to.name === 'Signin') {
     if (isAuthenticated) {
-      next({ name: 'Dashboard' })
+      next({ path: '/evaluations' })
     } else {
       next()
     }

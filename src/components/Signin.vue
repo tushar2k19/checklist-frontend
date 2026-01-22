@@ -769,7 +769,7 @@ export default {
       }
       
       this.error = ''
-      this.$router.replace('/dashboard')
+      this.$router.replace('/evaluations')
     },
     signinFailed: function (error) {
       this.error = (error.response && error.response.data && error.response.data.error) || ''

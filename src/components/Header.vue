@@ -169,7 +169,7 @@ export default {
       this.mobileMenuOpen = false
     },
     navigateToHome() {
-      this.$router.push('/dashboard')
+      this.$router.push('/evaluations')
     },
     toggleMobileMenu() {
       this.mobileMenuOpen = !this.mobileMenuOpen

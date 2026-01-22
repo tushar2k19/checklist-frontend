@@ -2,7 +2,7 @@
   <div class="checklist-page">
     <!-- Header - Consistent with Dashboard -->
     <div class="main-header">
-      <button class="back-btn" @click="$router.push('/dashboard')" title="Back to Dashboard">
+      <button class="back-btn" @click="$router.push('/evaluations')" title="Back to Evaluations">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>

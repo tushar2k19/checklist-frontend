@@ -11,7 +11,7 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
-          Back to Dashboard
+          Back to Evaluations
         </button>
       </div>
     </div>
@@ -189,7 +189,7 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
-          Back to Dashboard
+          Back to Evaluations
         </button>
         <button 
           v-if="evaluation && evaluation.status === 'completed'"
@@ -251,17 +251,11 @@ export default {
         const data = response.data.data || response.data;
         this.evaluation = data;
         
-        // Extract fileId from evaluation for re-evaluation
         if (data.uploaded_file_id) {
           this.fileId = data.uploaded_file_id;
         }
         
-        // Load logs from localStorage
         this.evaluationLogs = this.getEvaluationLogs(evaluationId);
-        
-        // If evaluation has uploaded_file_id, store it for re-evaluate
-        // We need to check the API response structure
-        // For now, we'll try to get fileId from a separate API call if needed
         
       } catch (error) {
         console.error('Failed to load evaluation:', error);
@@ -369,21 +363,15 @@ export default {
     
     // Navigate back
     navigateBack() {
-      // Try to go back, or navigate to dashboard
+      // Try to go back, or navigate to evaluations
       if (window.history.length > 1) {
         this.$router.go(-1);
       } else {
-        this.$router.push({ name: 'Dashboard' });
+        this.$router.push({ path: '/evaluations' });
       }
     },
     
-    // Re-evaluate
     async reEvaluate() {
-      // We need to get the fileId from the evaluation
-      // The API response should include uploaded_file information
-      // For now, we'll try to fetch it or use a workaround
-      
-      // If we have fileId stored, use it
       if (this.fileId) {
         this.$router.push({ 
           name: 'NewEvaluation', 
@@ -392,9 +380,6 @@ export default {
         return;
       }
       
-      // Otherwise, try to get it from the evaluation
-      // We might need to make an additional API call to get the file ID
-      // For now, navigate without fileId - user can select file manually
       this.$router.push({ name: 'NewEvaluation' });
     }
   }

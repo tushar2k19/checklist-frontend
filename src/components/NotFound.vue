@@ -115,7 +115,7 @@
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
               <polyline points="9,22 9,12 15,12 15,22"/>
             </svg>
-            {{ isAuthenticated ? 'Go to Dashboard' : 'Go to Login' }}
+            {{ isAuthenticated ? 'Go to Evaluations' : 'Go to Login' }}
           </button>
           
           <button @click="goBack" class="btn btn-secondary">
@@ -210,7 +210,7 @@ export default {
     },
     goHome() {
       if (this.isAuthenticated) {
-        this.$router.push('/dashboard')
+        this.$router.push('/evaluations')
       } else {
         this.$router.push('/login')
       }
