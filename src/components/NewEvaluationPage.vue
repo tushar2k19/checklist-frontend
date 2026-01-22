@@ -2,8 +2,16 @@
   <div class="evaluation-page">
     <!-- Header -->
     <div class="page-header">
-      <h1>New Evaluation</h1>
-      <p class="page-subtitle">Select scheme, document type, and file to start evaluation</p>
+      <button class="back-btn" @click="$router.push('/evaluations')" title="Back to Evaluations">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back
+      </button>
+      <div class="header-content">
+        <h1>New Evaluation</h1>
+        <p class="page-subtitle">Select scheme, document type, and file to start evaluation</p>
+      </div>
     </div>
 
     <!-- Form Section -->
@@ -926,6 +934,13 @@ export default {
 
 .page-header {
   margin-bottom: 32px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.header-content {
+  flex: 1;
 }
 
 .page-header h1 {
@@ -939,6 +954,35 @@ export default {
   font-size: 16px;
   color: #565869;
   margin: 0;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid #e5e5e5;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #565869;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.back-btn:hover {
+  background: #f1f1f1;
+  border-color: #d1d5db;
+  color: #2d333a;
+  transform: translateX(-2px);
+}
+
+.back-btn:focus {
+  outline: 2px solid #10a37f;
+  outline-offset: 2px;
 }
 
 .form-section {
@@ -1462,6 +1506,18 @@ export default {
   color: #d1d5db;
 }
 
+.dark-theme .back-btn {
+  background: #3a3a3f;
+  border-color: #4d4d4f;
+  color: #d1d5db;
+}
+
+.dark-theme .back-btn:hover {
+  background: #4d4d4f;
+  color: white;
+  border-color: #10a37f;
+}
+
 .dark-theme .form-section {
   background: #343541;
 }
@@ -1573,6 +1629,20 @@ export default {
 @media (max-width: 768px) {
   .evaluation-page {
     padding: 20px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .back-btn {
+    align-self: flex-start;
+    margin-top: 0;
+  }
+  
+  .page-header h1 {
+    font-size: 24px;
   }
   
   .form-section {
