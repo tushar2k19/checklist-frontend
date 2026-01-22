@@ -236,6 +236,20 @@
         </svg>
         <span>{{ errors.evaluation }}</span>
       </div>
+      
+      <!-- Evaluation Logs -->
+      <div v-if="evaluationLogs" class="logs-section">
+        <div class="logs-header">
+          <h3>Evaluation Logs</h3>
+          <button @click="showLogs = !showLogs" class="toggle-logs-btn">
+            {{ showLogs ? 'Hide' : 'Show' }} Logs
+          </button>
+        </div>
+        <div v-if="showLogs" class="logs-content">
+          <pre class="logs-text">{{ evaluationLogs }}</pre>
+          <button @click="copyLogs" class="copy-logs-btn">Copy Logs</button>
+        </div>
+      </div>
 
       <!-- Action Buttons -->
       <div class="form-actions">
@@ -296,7 +310,9 @@ export default {
         file: null,
         evaluation: null
       },
-      evaluationProgress: null
+      evaluationProgress: null,
+      showLogs: false,
+      evaluationLogs: ''
     }
   },
   
@@ -317,27 +333,6 @@ export default {
              this.selectedChecklistItemIds.length > 0 &&
              (this.selectedFileId || this.newFile) &&
              !this.loading.evaluation;
-    }
-  },
-  
-  mounted() {
-    // Check authentication
-    const token = localStorage.getItem('jwt_access');
-    if (!token) {
-      this.$router.push('/login');
-      return;
-    }
-    
-    // Load initial data
-    this.loadSchemes();
-    this.loadDocumentTypes();
-    this.loadFiles();
-    
-    // Check if fileId is provided in route params/query
-    const fileId = this.$route.params.fileId || this.$route.query.fileId;
-    if (fileId) {
-      this.selectedFileId = parseInt(fileId);
-      this.fileSelectionMode = 'existing';
     }
   },
   
@@ -683,6 +678,12 @@ export default {
           
           const result = await this.triggerEvaluation();
           
+          // Store logs in localStorage with 24hr expiry
+          if (result.logs) {
+            this.storeEvaluationLogs(result.id, result.logs);
+            this.evaluationLogs = result.logs;
+          }
+          
           // Success - show message and navigate
           this.$toast.success('Evaluation completed successfully!');
           
@@ -787,6 +788,17 @@ export default {
       return 'An unexpected error occurred';
     },
     
+    // Copy logs to clipboard
+    async copyLogs() {
+      try {
+        await navigator.clipboard.writeText(this.evaluationLogs);
+        this.$toast.success('Logs copied to clipboard!');
+      } catch (error) {
+        console.error('Failed to copy logs:', error);
+        this.$toast.error('Failed to copy logs');
+      }
+    },
+    
     // Reset Form
     resetForm() {
       this.selectedSchemeId = null;
@@ -797,6 +809,8 @@ export default {
       this.newFile = null;
       this.fileSelectionMode = 'existing';
       this.evaluationProgress = null;
+      this.showLogs = false;
+      this.evaluationLogs = '';
       this.errors = {
         scheme: null,
         documentType: null,
@@ -806,6 +820,97 @@ export default {
         evaluation: null
       };
       this.uploadError = null;
+    },
+    
+    // Store evaluation logs in localStorage with 24hr expiry
+    storeEvaluationLogs(evaluationId, logs) {
+      try {
+        const logData = {
+          evaluationId: evaluationId,
+          logs: logs,
+          timestamp: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+        };
+        
+        const key = `evaluation_logs_${evaluationId}`;
+        localStorage.setItem(key, JSON.stringify(logData));
+        
+        // Clean up expired logs
+        this.cleanupExpiredLogs();
+      } catch (error) {
+        console.error('Failed to store evaluation logs:', error);
+      }
+    },
+    
+    // Get evaluation logs from localStorage
+    getEvaluationLogs(evaluationId) {
+      try {
+        const key = `evaluation_logs_${evaluationId}`;
+        const data = localStorage.getItem(key);
+        
+        if (!data) return null;
+        
+        const logData = JSON.parse(data);
+        
+        // Check if expired
+        if (new Date(logData.expiresAt) < new Date()) {
+          localStorage.removeItem(key);
+          return null;
+        }
+        
+        return logData.logs;
+      } catch (error) {
+        console.error('Failed to get evaluation logs:', error);
+        return null;
+      }
+    },
+    
+    // Clean up expired logs
+    cleanupExpiredLogs() {
+      try {
+        const keys = Object.keys(localStorage);
+        const now = new Date();
+        
+        keys.forEach(key => {
+          if (key.startsWith('evaluation_logs_')) {
+            try {
+              const data = JSON.parse(localStorage.getItem(key));
+              if (data.expiresAt && new Date(data.expiresAt) < now) {
+                localStorage.removeItem(key);
+              }
+            } catch (e) {
+              // Invalid data, remove it
+              localStorage.removeItem(key);
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Failed to cleanup expired logs:', error);
+      }
+    }
+  },
+  
+  mounted() {
+    // Clean up expired logs on mount
+    this.cleanupExpiredLogs();
+    
+    // Check authentication
+    const token = localStorage.getItem('jwt_access');
+    if (!token) {
+      this.$router.push('/login');
+      return;
+    }
+    
+    // Load initial data
+    this.loadSchemes();
+    this.loadDocumentTypes();
+    this.loadFiles();
+    
+    // Check if fileId is provided in route params/query
+    const fileId = this.$route.params.fileId || this.$route.query.fileId;
+    if (fileId) {
+      this.selectedFileId = parseInt(fileId);
+      this.fileSelectionMode = 'existing';
     }
   }
 }
@@ -1241,6 +1346,107 @@ export default {
 .empty-state p {
   margin: 0;
   font-size: 14px;
+}
+
+.logs-section {
+  margin-top: 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.logs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.logs-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d333a;
+  margin: 0;
+}
+
+.toggle-logs-btn {
+  background: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #565869;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-logs-btn:hover {
+  background: #f3f4f6;
+  border-color: #10a37f;
+  color: #10a37f;
+}
+
+.logs-content {
+  padding: 16px;
+  background: #1e1e1e;
+  position: relative;
+}
+
+.logs-text {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #d4d4d4;
+  margin: 0;
+  padding: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.copy-logs-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #10a37f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-logs-btn:hover {
+  background: #0d8f68;
+}
+
+.dark-theme .logs-section {
+  border-color: #4d4d4f;
+}
+
+.dark-theme .logs-header {
+  background: #2d2d30;
+  border-bottom-color: #4d4d4f;
+}
+
+.dark-theme .logs-header h3 {
+  color: white;
+}
+
+.dark-theme .toggle-logs-btn {
+  border-color: #4d4d4f;
+  color: #d1d5db;
+}
+
+.dark-theme .toggle-logs-btn:hover {
+  background: #3a3a3f;
+  border-color: #10a37f;
+  color: #10a37f;
 }
 
 /* Dark Theme */

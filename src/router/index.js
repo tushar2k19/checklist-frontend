@@ -6,6 +6,9 @@ import Dashboard from '../components/Dashboard.vue'
 import ChecklistAnalyzer from '../components/ChecklistAnalyzer.vue'
 import FilesPage from '../components/FilesPage.vue'
 import NewEvaluationPage from '../components/NewEvaluationPage.vue'
+import EvaluationResults from '../components/EvaluationResults.vue'
+import AnalysisDashboard from '../components/AnalysisDashboard.vue'
+import Settings from '../components/Settings.vue'
 import NotFound from '../components/NotFound.vue'
 
 
@@ -39,9 +42,27 @@ const router = new Router({
       meta: { requiresAuth: true }
     },
     {
+      path: '/evaluations',
+      name: 'AnalysisDashboard',
+      component: AnalysisDashboard,
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/evaluations/new',
       name: 'NewEvaluation',
       component: NewEvaluationPage,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/evaluations/:id',
+      name: 'EvaluationResults',
+      component: EvaluationResults,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/settings',
+      name: 'Settings',
+      component: Settings,
       meta: { requiresAuth: true }
     },
     {
