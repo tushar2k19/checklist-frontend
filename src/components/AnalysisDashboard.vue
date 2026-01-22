@@ -464,14 +464,15 @@ export default {
       this.loadEvaluations();
     },
     
-    // Format date
+    // Format date in IST
     formatDate(dateString) {
       if (!dateString) return '';
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
+      return date.toLocaleDateString('en-IN', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
+        timeZone: 'Asia/Kolkata',
         hour: '2-digit',
         minute: '2-digit'
       });

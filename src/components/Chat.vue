@@ -415,9 +415,10 @@ export default {
     },
 
     formatTime(timestamp) {
-      return new Date(timestamp).toLocaleTimeString([], { 
+      return new Date(timestamp).toLocaleTimeString('en-IN', { 
         hour: '2-digit', 
-        minute: '2-digit' 
+        minute: '2-digit',
+        timeZone: 'Asia/Kolkata'
       });
     },
 

@@ -532,8 +532,15 @@ export default {
       if (!this.results || !this.results.length) return
 
       const docName = this.getDisplayName(this.selectedDocument)
-      const dateStr = new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
-      const timeStr = new Date().toLocaleTimeString('en-IN')
+      const dateStr = new Date().toLocaleDateString('en-IN', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        timeZone: 'Asia/Kolkata'
+      })
+      const timeStr = new Date().toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata'
+      })
 
       const yes = this.getStatusCount('yes')
       const partial = this.getStatusCount('partial')
@@ -955,7 +962,10 @@ export default {
       const bodyRows = this.results.map((r, i) => [i + 1, r.item || '', r.status || '', paragraphize(r.remarks)])
 
       const docName = this.getDisplayName(this.selectedDocument)
-      const dateStr = new Date().toISOString().slice(0, 10)
+      // Get current date in IST and format as YYYY-MM-DD
+      const now = new Date();
+      const istDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+      const dateStr = istDate.toISOString().slice(0, 10)
 
       // Build sheet data with a styled header section
       const titleRow = [`Checklist – ${docName} (${dateStr})`]
