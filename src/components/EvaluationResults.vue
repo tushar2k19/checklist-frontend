@@ -7,6 +7,32 @@
         <p class="page-subtitle">Detailed analysis results for this evaluation</p>
       </div>
       <div class="header-actions">
+        <button 
+          @click="exportToPDF" 
+          class="btn btn-secondary" 
+          :disabled="!evaluation || !evaluation.results || evaluation.results.length === 0"
+          title="Download PDF"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Download PDF
+        </button>
+        <button 
+          @click="exportToExcel" 
+          class="btn btn-secondary" 
+          :disabled="!evaluation || !evaluation.results || evaluation.results.length === 0"
+          title="Download Excel"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Download Excel
+        </button>
         <button @click="navigateBack" class="btn btn-secondary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="15 18 9 12 15 6"/>
@@ -208,6 +234,11 @@
 </template>
 
 <script>
+import pdfMake from 'pdfmake/build/pdfmake'
+import pdfFonts from 'pdfmake/build/vfs_fonts'
+pdfMake.vfs = pdfFonts.vfs
+import * as XLSX from 'xlsx'
+
 export default {
   name: 'EvaluationResults',
   data() {
@@ -398,6 +429,560 @@ export default {
       }
       
       this.$router.push({ name: 'NewEvaluation' });
+    },
+    
+    // Export to PDF
+    exportToPDF() {
+      if (!this.evaluation || !this.evaluation.results || this.evaluation.results.length === 0) return
+
+      const docName = this.evaluation.filename || 'Document'
+      const dateStr = new Date(this.evaluation.date).toLocaleDateString('en-IN', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        timeZone: 'Asia/Kolkata'
+      })
+      const timeStr = new Date(this.evaluation.date).toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata'
+      })
+
+      const yes = (this.evaluation.summary && this.evaluation.summary.compliant) || 0
+      const partial = (this.evaluation.summary && this.evaluation.summary.partial) || 0
+      const no = (this.evaluation.summary && this.evaluation.summary.non_compliant) || 0
+      const total = (this.evaluation.summary && this.evaluation.summary.total) || this.evaluation.results.length
+      const completionPercentage = total > 0 ? Math.round((yes / total) * 100) : 0
+      
+      // Capture evaluation metadata for use in docDefinition
+      const scheme = this.evaluation.scheme || 'N/A'
+      const documentType = this.evaluation.document_type || 'N/A'
+
+      // Build pdfmake table body with enhanced colored status cells
+      const tableBody = [
+        [
+          { text: 'S.No.', style: 'tableHeader', fillColor: '#000000' }, 
+          { text: 'Checklist Item', style: 'tableHeader', fillColor: '#000000' }, 
+          { text: 'Status', style: 'tableHeader', fillColor: '#000000' }, 
+          { text: 'Remarks', style: 'tableHeader', fillColor: '#000000' }
+        ],
+        ...this.evaluation.results.map((r, i) => {
+          const status = (r.status || '').toString()
+          const s = status.toLowerCase()
+          let statusCell = { text: status, alignment: 'center', fontSize: 9, bold: true }
+          
+          if (s.includes('yes') || s.includes('found') || s.includes('covered')) {
+            statusCell = { text: '✓ ' + status, alignment: 'center', fillColor: '#d1fae5', color: '#065f46', bold: true, fontSize: 9 }
+          } else if (s.includes('partial')) {
+            statusCell = { text: '◐ ' + status, alignment: 'center', fillColor: '#fef3c7', color: '#92400e', bold: true, fontSize: 9 }
+          } else if (s.includes('no') || s.includes('not')) {
+            statusCell = { text: '✗ ' + status, alignment: 'center', fillColor: '#fee2e2', color: '#991b1b', bold: true, fontSize: 9 }
+          }
+          
+          return [
+            { text: String(i + 1), alignment: 'center', fontSize: 9, color: '#1f2937' },
+            { text: r.item_text || '', fontSize: 9, color: '#111827' },
+            statusCell,
+            { text: this.paragraphizeForPdf(this.cleanRemarks(r.remarks || '')), fontSize: 8, color: '#374151' }
+          ]
+        })
+      ]
+
+      const docDefinition = {
+        pageSize: 'A4',
+        pageMargins: [40, 100, 40, 60],
+        
+        // Professional Header on every page - Compact version
+        header: function(currentPage, pageCount) {
+          return {
+            stack: [
+              // Black gradient header background - reduced height
+              {
+                canvas: [
+                  {
+                    type: 'rect',
+                    x: 0,
+                    y: 0,
+                    w: 595,
+                    h: 80,
+                    color: '#000000',
+                    linearGradient: ['#000000', '#1a1a1a']
+                  }
+                ]
+              },
+              // Government of India text - reduced margin
+              {
+                text: 'Government of India',
+                style: 'govHeader',
+                margin: [40, -70, 0, 0]
+              },
+              // Ministry name - reduced margin
+              {
+                text: 'Ministry of Development of North Eastern Region',
+                style: 'ministryHeader',
+                margin: [40, 2, 0, 0]
+              },
+              // Subtitle - reduced margin
+              {
+                text: 'DPR Checklist Analysis Report',
+                style: 'subtitleHeader',
+                margin: [40, 3, 0, 0]
+              },
+              // Decorative line - reduced margin
+              {
+                canvas: [
+                  {
+                    type: 'line',
+                    x1: 40,
+                    y1: 0,
+                    x2: 555,
+                    y2: 0,
+                    lineWidth: 2,
+                    lineColor: '#fbbf24'
+                  }
+                ],
+                margin: [0, 6, 0, 0]
+              }
+            ]
+          }
+        },
+        
+        // Professional Footer
+        footer: function(currentPage, pageCount) {
+          return {
+            stack: [
+              {
+                canvas: [
+                  {
+                    type: 'line',
+                    x1: 40,
+                    y1: 0,
+                    x2: 555,
+                    y2: 0,
+                    lineWidth: 0.5,
+                    lineColor: '#cbd5e1'
+                  }
+                ]
+              },
+              {
+                columns: [
+                  {
+                    text: `Generated on: ${dateStr} at ${timeStr}`,
+                    style: 'footer',
+                    alignment: 'left',
+                    margin: [40, 8, 0, 0]
+                  },
+                  {
+                    text: `Page ${currentPage} of ${pageCount}`,
+                    style: 'footer',
+                    alignment: 'right',
+                    margin: [0, 8, 40, 0]
+                  }
+                ]
+              },
+              {
+                text: 'Ministry of Development of North Eastern Region',
+                style: 'footerMinistry',
+                alignment: 'center',
+                margin: [0, 4, 0, 12]
+              }
+            ]
+          }
+        },
+        
+        content: [
+          // Document Information Card - Compact
+          {
+            table: {
+              widths: ['*'],
+              body: [
+                [
+                  {
+                    stack: [
+                      {
+                        columns: [
+                          {
+                            width: '*',
+                            stack: [
+                              { text: 'Document Information', style: 'sectionTitle', margin: [0, 0, 0, 4] },
+                              { text: `DPR Name: ${docName}`, style: 'infoLabel', margin: [0, 2, 0, 0], bold: true },
+                              { text: `Scheme: ${scheme}`, style: 'infoLabel', margin: [0, 1, 0, 0] },
+                              { text: `Document Type: ${documentType}`, style: 'infoLabel', margin: [0, 1, 0, 0] },
+                              { text: `Analysis Date: ${dateStr}`, style: 'infoLabel', margin: [0, 1, 0, 0], bold: true },
+                              { text: `Total Checklist Items: ${total}`, style: 'infoLabel', margin: [0, 1, 0, 0], bold: true }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    fillColor: '#f8fafc',
+                    margin: [8, 8, 8, 8]
+                  }
+                ]
+              ]
+            },
+            layout: {
+              hLineWidth: function() { return 1 },
+              vLineWidth: function() { return 1 },
+              hLineColor: function() { return '#cbd5e1' },
+              vLineColor: function() { return '#cbd5e1' }
+            },
+            margin: [0, 0, 0, 12]
+          },
+          
+          // Summary Statistics Cards
+          {
+            text: 'Analysis Summary',
+            style: 'sectionTitle',
+            margin: [0, 0, 0, 8]
+          },
+          {
+            columns: [
+              {
+                width: '25%',
+                table: {
+                  widths: ['*'],
+                  body: [[
+                    {
+                      stack: [
+                        { text: yes.toString(), style: 'statNumber', color: '#065f46' },
+                        { text: 'Found', style: 'statLabel', color: '#065f46' }
+                      ],
+                      fillColor: '#d1fae5',
+                      alignment: 'center',
+                      margin: [6, 8, 6, 8]
+                    }
+                  ]]
+                },
+                layout: 'noBorders'
+              },
+              {
+                width: '25%',
+                table: {
+                  widths: ['*'],
+                  body: [[
+                    {
+                      stack: [
+                        { text: partial.toString(), style: 'statNumber', color: '#92400e' },
+                        { text: 'Partial', style: 'statLabel', color: '#92400e' }
+                      ],
+                      fillColor: '#fef3c7',
+                      alignment: 'center',
+                      margin: [6, 8, 6, 8]
+                    }
+                  ]]
+                },
+                layout: 'noBorders'
+              },
+              {
+                width: '25%',
+                table: {
+                  widths: ['*'],
+                  body: [[
+                    {
+                      stack: [
+                        { text: no.toString(), style: 'statNumber', color: '#991b1b' },
+                        { text: 'Not Found', style: 'statLabel', color: '#991b1b' }
+                      ],
+                      fillColor: '#fee2e2',
+                      alignment: 'center',
+                      margin: [6, 8, 6, 8]
+                    }
+                  ]]
+                },
+                layout: 'noBorders'
+              },
+              {
+                width: '25%',
+                table: {
+                  widths: ['*'],
+                  body: [[
+                    {
+                      stack: [
+                        { text: `${completionPercentage}%`, style: 'statNumber', color: '#1e40af' },
+                        { text: 'Complete', style: 'statLabel', color: '#1e40af' }
+                      ],
+                      fillColor: '#dbeafe',
+                      alignment: 'center',
+                      margin: [6, 8, 6, 8]
+                    }
+                  ]]
+                },
+                layout: 'noBorders'
+              }
+            ],
+            columnGap: 8,
+            margin: [0, 0, 0, 12]
+          },
+          
+          // Progress Bar
+          {
+            stack: [
+              { text: 'Completion Progress', style: 'progressLabel', margin: [0, 0, 0, 6] },
+              {
+                canvas: [
+                  // Background bar
+                  {
+                    type: 'rect',
+                    x: 0,
+                    y: 0,
+                    w: 515,
+                    h: 20,
+                    r: 10,
+                    color: '#e5e7eb'
+                  },
+                  // Progress bar
+                  {
+                    type: 'rect',
+                    x: 0,
+                    y: 0,
+                    w: (515 * completionPercentage / 100),
+                    h: 20,
+                    r: 10,
+                    linearGradient: ['#10b981', '#059669']
+                  }
+                ]
+              }
+            ],
+            margin: [0, 0, 0, 16]
+          },
+          
+          // Checklist Items Section
+          {
+            text: 'Detailed Checklist Analysis',
+            style: 'sectionTitle',
+            margin: [0, 0, 0, 8]
+          },
+          
+          // Main Table
+          {
+            table: {
+              headerRows: 1,
+              widths: [35, 180, 70, '*'],
+              body: tableBody
+            },
+            layout: {
+              fillColor: function(rowIndex) {
+                if (rowIndex === 0) return '#1e40af'
+                return (rowIndex % 2 === 0) ? '#f9fafb' : '#ffffff'
+              },
+              hLineWidth: function(i, node) {
+                return (i === 0 || i === 1 || i === node.table.body.length) ? 1.5 : 0.5
+              },
+              vLineWidth: function() { return 0.5 },
+              hLineColor: function(i) {
+                return (i === 0 || i === 1) ? '#1e40af' : '#e5e7eb'
+              },
+              vLineColor: function() { return '#e5e7eb' },
+              paddingLeft: function() { return 8 },
+              paddingRight: function() { return 8 },
+              paddingTop: function() { return 6 },
+              paddingBottom: function() { return 6 }
+            }
+          }
+        ],
+        
+        styles: {
+          govHeader: {
+            fontSize: 9,
+            color: '#ffffff',
+            bold: false,
+            letterSpacing: 0.3
+          },
+          ministryHeader: {
+            fontSize: 14,
+            bold: true,
+            color: '#ffffff',
+            letterSpacing: 0.2
+          },
+          subtitleHeader: {
+            fontSize: 9,
+            color: '#fbbf24',
+            bold: false,
+            italics: true
+          },
+          sectionTitle: {
+            fontSize: 14,
+            bold: true,
+            color: '#1e40af',
+            margin: [0, 8, 0, 4]
+          },
+          infoLabel: {
+            fontSize: 10,
+            color: '#334155',
+            lineHeight: 1.4
+          },
+          statNumber: {
+            fontSize: 24,
+            bold: true,
+            margin: [0, 0, 0, 4]
+          },
+          statLabel: {
+            fontSize: 10,
+            bold: true
+          },
+          progressLabel: {
+            fontSize: 11,
+            bold: true,
+            color: '#475569'
+          },
+          tableHeader: {
+            color: '#ffffff',
+            bold: true,
+            alignment: 'center',
+            fontSize: 10
+          },
+          footer: {
+            fontSize: 8,
+            color: '#64748b'
+          },
+          footerMinistry: {
+            fontSize: 7,
+            color: '#94a3b8',
+            italics: true
+          }
+        },
+        
+        defaultStyle: {
+          fontSize: 9,
+          color: '#1f2937',
+          lineHeight: 1.3
+        }
+      }
+
+      pdfMake.createPdf(docDefinition).download(`Checklist_${this.safeFilename(docName)}_${dateStr.replace(/\s+/g, '_')}.pdf`)
+      this.$toast && this.$toast.success('PDF downloaded')
+    },
+    
+    // Export to Excel
+    exportToExcel() {
+      if (!this.evaluation || !this.evaluation.results || this.evaluation.results.length === 0) return
+
+      const header = ['Item #', 'Checklist Item', 'Status', 'Remarks']
+      // Format remarks with paragraph breaks for readability in Excel
+      const paragraphize = (txt) => {
+        const s = this.cleanRemarks(txt || '')
+          // add blank line after a period followed by a capital/number/open bracket
+          .replace(/\.\s+(?=[A-Z0-9\(\["'"])/g, '.\n\n')
+          // line break after semicolons
+          .replace(/;\s+/g, ';\n')
+          // turn bullets into new lines
+          .replace(/\s*[-•]\s+/g, '\n• ');
+        return s.trim();
+      }
+      const bodyRows = this.evaluation.results.map((r, i) => [i + 1, r.item_text || '', r.status || '', paragraphize(r.remarks)])
+
+      const docName = this.evaluation.filename || 'Document'
+      // Get current date in IST and format as YYYY-MM-DD
+      const evalDate = new Date(this.evaluation.date);
+      const istDate = new Date(evalDate.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+      const dateStr = istDate.toISOString().slice(0, 10)
+
+      // Build sheet data with a styled header section
+      const titleRow = [`Checklist – ${docName} (${dateStr})`]
+      const metaRow = ['Document:', docName, 'Date:', dateStr]
+      const schemeRow = ['Scheme:', this.evaluation.scheme || 'N/A', 'Document Type:', this.evaluation.document_type || 'N/A']
+      const emptyRow = ['']
+      const data = [titleRow, metaRow, schemeRow, emptyRow, header, ...bodyRows]
+
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.aoa_to_sheet(data)
+
+      // Column widths
+      ws['!cols'] = [
+        { wch: 8 },   // Item #
+        { wch: 48 },  // Checklist Item
+        { wch: 12 },  // Status
+        { wch: 100 }  // Remarks
+      ]
+
+      // Merge the big title across A1:D1
+      ws['!merges'] = ws['!merges'] || []
+      ws['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } })
+      ws['!merges'].push({ s: { r: 1, c: 0 }, e: { r: 1, c: 1 } })
+      ws['!merges'].push({ s: { r: 1, c: 2 }, e: { r: 1, c: 3 } })
+      ws['!merges'].push({ s: { r: 2, c: 0 }, e: { r: 2, c: 1 } })
+      ws['!merges'].push({ s: { r: 2, c: 2 }, e: { r: 2, c: 3 } })
+
+      // Add autofilter on the data table (row 5 is header, zero-indexed r=4)
+      const lastRow = 4 + bodyRows.length
+      ws['!autofilter'] = { ref: `A5:D${lastRow}` }
+
+      // Optional styling (supported in some viewers)
+      const setCell = (addr, s) => { if (ws[addr]) ws[addr].s = s }
+      const col = (index) => String.fromCharCode('A'.charCodeAt(0) + index)
+      // Title style (green band)
+      setCell('A1', { font: { sz: 16, bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '10A37F' }, patternType: 'solid' }, alignment: { vertical: 'center' } })
+      // Meta rows subtle background
+      ;['A2','B2','C2','D2','A3','B3','C3','D3'].forEach(a => setCell(a, { fill: { fgColor: { rgb: 'F3F4F6' }, patternType: 'solid' }, font: { color: { rgb: '111827' } } }))
+      // Meta labels bold
+      setCell('A2', { font: { bold: true } })
+      setCell('C2', { font: { bold: true } })
+      setCell('A3', { font: { bold: true } })
+      setCell('C3', { font: { bold: true } })
+      // Header row bold + center with strong background
+      ;['A5','B5','C5','D5'].forEach(a => setCell(a, { font: { bold: true, color: { rgb: 'FFFFFF' } }, alignment: { vertical: 'center', horizontal: 'center' }, fill: { fgColor: { rgb: '374151' }, patternType: 'solid' }, border: { top: { style: 'thin', color: { rgb: '111827' } }, bottom: { style: 'thin', color: { rgb: '111827' } }, left: { style: 'thin', color: { rgb: '111827' } }, right: { style: 'thin', color: { rgb: '111827' } } } }))
+      // Body styling: zebra rows, status colors, borders, wrap remarks
+      for (let r = 6; r <= lastRow + 1; r++) {
+        const isOdd = (r % 2) === 0
+        // Row zebra background for A-D
+        ;['A','B','C','D'].forEach(ch => {
+          const addr = `${ch}${r}`
+          const base = { font: { sz: 11, color: { rgb: '111827' } }, alignment: { vertical: 'top', horizontal: ch === 'C' ? 'center' : 'left', wrapText: ch === 'D' }, border: { top: { style: 'thin', color: { rgb: 'D1D5DB' } }, bottom: { style: 'thin', color: { rgb: 'D1D5DB' } }, left: { style: 'thin', color: { rgb: 'D1D5DB' } }, right: { style: 'thin', color: { rgb: 'D1D5DB' } } } }
+          const fill = isOdd ? { fill: { fgColor: { rgb: 'F9FAFB' }, patternType: 'solid' } } : {}
+          setCell(addr, { ...base, ...fill })
+        })
+        // Status pill color
+        const statusAddr = `C${r}`
+        const raw = (ws[statusAddr] && ws[statusAddr].v ? String(ws[statusAddr].v).toLowerCase() : '')
+        if (raw.includes('yes') || raw.includes('found') || raw.includes('covered')) {
+          setCell(statusAddr, { fill: { fgColor: { rgb: 'DCFCE7' }, patternType: 'solid' }, font: { color: { rgb: '166534' }, bold: true } })
+        } else if (raw.includes('partial')) {
+          setCell(statusAddr, { fill: { fgColor: { rgb: 'FEF3C7' }, patternType: 'solid' }, font: { color: { rgb: '92400E' }, bold: true } })
+        } else if (raw.includes('no') || raw.includes('not')) {
+          setCell(statusAddr, { fill: { fgColor: { rgb: 'FEE2E2' }, patternType: 'solid' }, font: { color: { rgb: 'B91C1C' }, bold: true } })
+        }
+      }
+
+      // Suggest row heights (title/meta/header and body)
+      ws['!rows'] = ws['!rows'] || []
+      ws['!rows'][0] = { hpt: 28 }
+      ws['!rows'][1] = { hpt: 18 }
+      ws['!rows'][2] = { hpt: 18 }
+      ws['!rows'][4] = { hpt: 22 }
+      // Make body rows a bit taller for readability
+      for (let i = 5; i <= lastRow; i++) {
+        ws['!rows'][i] = ws['!rows'][i] || { hpt: 28 }
+      }
+
+      XLSX.utils.book_append_sheet(wb, ws, 'Results')
+      XLSX.writeFile(wb, `Checklist_${this.safeFilename(docName)}_${dateStr}.xlsx`)
+      this.$toast && this.$toast.success('Excel downloaded')
+    },
+    
+    // Apply paragraph breaks for readability in PDF
+    paragraphizeForPdf(txt) {
+      const s = (txt || '')
+        // 1) Normalize exotic/unicode spaces and invisible chars
+        .replace(/\u00AD/g, '')                 // soft hyphen
+        .replace(/[\u200B-\u200D\uFEFF]/g, '')  // zero-width
+        .replace(/[\x00-\x1F\x7F]/g, '')        // control chars
+        .replace(/\u00A0/g, ' ')                // NBSP -> space
+        .replace(/[\u2000-\u200A\u202F\u205F\u3000]/g, ' ') // thin/ideographic -> space
+        // 2) Fix character-by-character spaced runs (letters/digits)
+        .replace(/((?:[A-Za-z]\s){2,}[A-Za-z])/g, (m) => m.replace(/\s/g, ''))
+        .replace(/((?:\d\s){1,}\d)/g, (m) => m.replace(/\s/g, ''))
+        .replace(/\.\s+(?=[A-Z0-9\(\["'"])/g, '.\n\n')
+        .replace(/;\s+/g, ';\n')
+        .replace(/\s*[-•]\s+/g, '\n• ');
+      return s.trim();
+    },
+    
+    // Sanitize filename for download
+    safeFilename(name) {
+      return (name || 'Document')
+        .replace(/\.[^.]+$/, '')
+        .replace(/[^\w\-]+/g, '_')
+        .replace(/_+/g, '_')
+        .slice(0, 80);
     }
   }
 }
@@ -820,6 +1405,12 @@ export default {
   color: #10a37f;
 }
 
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* Dark Theme */
 .dark-theme .evaluation-results-page {
   background: #2d2d30;
@@ -929,6 +1520,11 @@ export default {
   background: #3a3a3f;
   border-color: #10a37f;
   color: #10a37f;
+}
+
+.dark-theme .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Responsive */
