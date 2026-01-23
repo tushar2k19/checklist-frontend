@@ -1,112 +1,123 @@
 <template>
   <div class="files-page">
-    <!-- Header -->
-    <div class="page-header">
-      <h1>Files</h1>
-      <p class="page-subtitle">Upload and manage your DPR files</p>
-    </div>
-
-    <!-- File Upload Section -->
-    <div class="upload-section">
-      <div 
-        class="upload-zone"
-        :class="{ 'dragover': isDragover, 'uploading': isUploading }"
-        @drop="handleDrop"
-        @dragover.prevent="isDragover = true"
-        @dragleave="isDragover = false"
-        @dragenter.prevent
-      >
-        <input 
-          ref="fileInput"
-          type="file" 
-          accept=".pdf,application/pdf"
-          @change="handleFileSelect"
-          style="display: none"
-        />
-        
-        <div v-if="!isUploading" class="upload-content">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          <h3>Drop PDF file here or click to browse</h3>
-          <p>Only PDF files are supported. Maximum file size: 50MB</p>
-          <button class="upload-btn" @click="$refs.fileInput.click()">Choose File</button>
+    <div class="page-container">
+      <!-- Header -->
+      <div class="page-header">
+        <div class="header-content">
+          <h1 class="page-title">Files</h1>
+          <div class="subtitle-wrapper">
+            <p class="page-subtitle">
+              <span class="subtitle-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14,2 14,8 20,8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+              </span>
+              <span class="subtitle-text">Upload and manage your DPR files</span>
+            </p>
+          </div>
         </div>
-        
-        <div v-else class="upload-progress">
-          <div class="progress-spinner"></div>
-          <p>{{ uploadProgressMessage }}</p>
-        </div>
-      </div>
-      
-      <div v-if="uploadError" class="error-message">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-        <span>{{ uploadError }}</span>
-      </div>
-    </div>
-
-    <!-- Files List Section -->
-    <div class="files-section">
-      <div class="section-header">
-        <h2>Your Files</h2>
-        <button 
-          v-if="files.length > 0" 
-          @click="refreshFiles" 
-          class="refresh-btn"
-          :disabled="loading"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="23 4 23 10 17 10"/>
-            <polyline points="1 20 1 14 7 14"/>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-          </svg>
-          Refresh
+        <button @click="showUploadModal = true" class="upload-files-btn">
+          <div class="btn-icon-wrapper">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <span class="btn-text">Upload Files</span>
         </button>
       </div>
 
-      <!-- Loading State -->
-      <div v-if="loading && files.length === 0" class="loading-state">
-        <div class="progress-spinner"></div>
-        <p>Loading files...</p>
-      </div>
+      <!-- Files List Section -->
+      <div class="files-section">
+        <div class="section-header">
+          <h2>Your Files</h2>
+          <button 
+            v-if="files.length > 0" 
+            @click="refreshFiles" 
+            class="refresh-btn"
+            :disabled="loading"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"/>
+              <polyline points="1 20 1 14 7 14"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            Refresh
+          </button>
+        </div>
 
-      <!-- Empty State -->
-      <div v-else-if="!loading && files.length === 0" class="empty-state">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14,2 14,8 20,8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-          <polyline points="10,9 9,9 8,9"/>
-        </svg>
-        <h3>No files uploaded yet</h3>
-        <p>Upload your first PDF file to get started</p>
-      </div>
+        <!-- Loading State -->
+        <div v-if="loading && files.length === 0" class="loading-state">
+          <div class="progress-spinner"></div>
+          <p>Loading files...</p>
+        </div>
 
-      <!-- Files List -->
-      <div v-else class="files-list">
-        <div 
-          v-for="file in files" 
-          :key="file.id" 
-          class="file-card"
-        >
-          <div class="file-info">
-            <div class="file-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14,2 14,8 20,8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-              </svg>
+        <!-- Empty State -->
+        <div v-else-if="!loading && files.length === 0" class="empty-state">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10,9 9,9 8,9"/>
+          </svg>
+          <h3>No files uploaded yet</h3>
+          <p>Upload your first PDF file to get started</p>
+          <button @click="showUploadModal = true" class="btn-primary-empty">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Upload Files
+          </button>
+        </div>
+
+        <!-- Files Grid -->
+        <div v-else class="files-grid">
+          <div 
+            v-for="file in files" 
+            :key="file.id" 
+            class="file-card"
+            @click="openFileEvaluationsModal(file)"
+          >
+            <div class="card-header">
+              <div class="file-icon-wrapper">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14,2 14,8 20,8"/>
+                </svg>
+              </div>
+              <div class="card-actions" @click.stop>
+                <button 
+                  v-if="file.status === 'ready'"
+                  @click="reEvaluate(file)"
+                  class="icon-btn re-evaluate-icon"
+                  title="Re-evaluate this file"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                  </svg>
+                </button>
+                <button 
+                  @click="deleteFile(file)"
+                  class="icon-btn delete-icon"
+                  title="Delete file"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3,6 5,6 21,6"/>
+                    <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"/>
+                  </svg>
+                </button>
+              </div>
             </div>
             
-            <div class="file-details">
+            <div class="card-body">
               <h3 class="file-name">{{ file.display_name || file.filename }}</h3>
               <div class="file-meta">
                 <span class="file-size">{{ file.size_mb }} MB</span>
@@ -114,8 +125,7 @@
                 <span class="file-date">{{ formatDate(file.uploaded_at) }}</span>
               </div>
               
-              <!-- Status and Progress -->
-              <div class="file-status">
+              <div class="file-status-row">
                 <span 
                   class="status-badge" 
                   :class="getStatusClass(file.status, file.vector_store_status)"
@@ -126,66 +136,199 @@
                 <span v-if="isProcessing(file)" class="progress-message">
                   {{ file.progress_message || 'Processing...' }}
                 </span>
-                
-                <div v-if="file.error_message" class="error-text">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="8" x2="12" y2="12"/>
-                    <line x1="12" y1="16" x2="12.01" y2="16"/>
-                  </svg>
-                  {{ file.error_message }}
+              </div>
+              
+              <div v-if="file.error_message" class="error-text">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span>{{ file.error_message }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="pagination.total_pages > 1" class="pagination">
+          <button 
+            @click="loadFiles(Math.max(1, pagination.current_page - 1))"
+            :disabled="pagination.current_page === 1 || loading"
+            class="page-btn"
+          >
+            Previous
+          </button>
+          <span class="page-info">
+            Page {{ pagination.current_page }} of {{ pagination.total_pages }}
+          </span>
+          <button 
+            @click="loadFiles(Math.min(pagination.total_pages, pagination.current_page + 1))"
+            :disabled="pagination.current_page >= pagination.total_pages || loading"
+            class="page-btn"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div v-if="showUploadModal" class="modal-overlay" @click.self="closeModal">
+      <div class="modal-content">
+        <button @click="closeModal" class="modal-close">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+        
+        <div class="modal-header">
+          <h2>Upload PDF File</h2>
+          <p>Drop your file here or click to browse</p>
+        </div>
+        
+        <div 
+          class="upload-zone"
+          :class="{ 'dragover': isDragover, 'uploading': isUploading }"
+          @drop="handleDrop"
+          @dragover.prevent="isDragover = true"
+          @dragleave="isDragover = false"
+          @dragenter.prevent
+          @click="!isUploading && $refs.fileInput.click()"
+        >
+          <input 
+            ref="fileInput"
+            type="file" 
+            accept=".pdf,application/pdf"
+            @change="handleFileSelect"
+            style="display: none"
+          />
+          
+          <div v-if="!isUploading" class="upload-content">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <h3>Drop PDF file here or click to browse</h3>
+            <p>Only PDF files are supported. Maximum file size: 50MB</p>
+            <button class="upload-btn" @click.stop="$refs.fileInput.click()">Choose File</button>
+          </div>
+          
+          <div v-else class="upload-progress">
+            <div class="progress-spinner"></div>
+            <p>{{ uploadProgressMessage }}</p>
+          </div>
+        </div>
+        
+        <div v-if="uploadError" class="error-message">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span>{{ uploadError }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- File Evaluations Modal -->
+    <div v-if="showEvaluationsModal" class="modal-overlay" @click.self="closeEvaluationsModal">
+      <div class="evaluations-modal-content">
+        <button @click="closeEvaluationsModal" class="modal-close">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+        
+        <div class="evaluations-modal-header">
+          <div class="file-info-header">
+            <div class="file-icon-header">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
+              </svg>
+            </div>
+            <div>
+              <h2>{{ selectedFile && (selectedFile.display_name || selectedFile.filename) }}</h2>
+              <p class="file-meta-header">{{ selectedFile && selectedFile.size_mb }} MB • {{ selectedFile && formatDate(selectedFile.uploaded_at) }}</p>
+            </div>
+          </div>
+          <button 
+            v-if="selectedFile && selectedFile.status === 'ready'"
+            @click.stop="evaluateWithFile"
+            class="evaluate-btn"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Evaluate with this File
+          </button>
+        </div>
+
+        <div class="evaluations-content">
+          <!-- Loading State -->
+          <div v-if="loadingEvaluations" class="evaluations-loading">
+            <div class="progress-spinner"></div>
+            <p>Loading evaluations...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div v-else-if="!loadingEvaluations && fileEvaluations.length === 0" class="evaluations-empty">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 11l3 3L22 4"/>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+            <h3>No evaluations yet</h3>
+            <p>This file hasn't been evaluated yet. Create your first evaluation.</p>
+          </div>
+
+          <!-- Evaluations List -->
+          <div v-else class="evaluations-list">
+            <div 
+              v-for="evaluation in fileEvaluations" 
+              :key="evaluation.id"
+              class="evaluation-item"
+              @click="navigateToEvaluation(evaluation.id)"
+            >
+              <div class="evaluation-item-content">
+                <div class="evaluation-main">
+                  <div class="evaluation-info">
+                    <h4>{{ evaluation.scheme }}</h4>
+                    <p class="evaluation-doc-type">{{ evaluation.document_type }}</p>
+                    <p class="evaluation-date">{{ formatDate(evaluation.date) }}</p>
+                  </div>
+                  <div class="evaluation-status">
+                    <span class="status-badge" :class="getEvaluationStatusClass(evaluation.status)">
+                      {{ getEvaluationStatusLabel(evaluation.status) }}
+                    </span>
+                  </div>
+                </div>
+                <div v-if="evaluation.summary" class="evaluation-stats">
+                  <div class="stat-mini">
+                    <span class="stat-value compliant">{{ evaluation.summary.compliant || 0 }}</span>
+                    <span class="stat-label">Compliant</span>
+                  </div>
+                  <div class="stat-mini">
+                    <span class="stat-value partial">{{ evaluation.summary.partial || 0 }}</span>
+                    <span class="stat-label">Partial</span>
+                  </div>
+                  <div class="stat-mini">
+                    <span class="stat-value non-compliant">{{ evaluation.summary.non_compliant || 0 }}</span>
+                    <span class="stat-label">Non-Compliant</span>
+                  </div>
+                  <div class="stat-mini">
+                    <span class="stat-value total">{{ evaluation.summary.total || 0 }}</span>
+                    <span class="stat-label">Total</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          
-          <div class="file-actions">
-            <button 
-              v-if="file.status === 'ready'"
-              @click="reEvaluate(file)"
-              class="action-btn re-evaluate-btn"
-              title="Re-evaluate this file"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="23 4 23 10 17 10"/>
-                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-              </svg>
-              Re-evaluate
-            </button>
-            
-            <button 
-              @click="deleteFile(file)"
-              class="action-btn delete-btn"
-              title="Delete file"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3,6 5,6 21,6"/>
-                <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"/>
-              </svg>
-            </button>
-          </div>
         </div>
-      </div>
-
-      <!-- Pagination -->
-      <div v-if="pagination.total_pages > 1" class="pagination">
-        <button 
-          @click="loadFiles(Math.max(1, pagination.current_page - 1))"
-          :disabled="pagination.current_page === 1 || loading"
-          class="page-btn"
-        >
-          Previous
-        </button>
-        <span class="page-info">
-          Page {{ pagination.current_page }} of {{ pagination.total_pages }}
-        </span>
-        <button 
-          @click="loadFiles(Math.min(pagination.total_pages, pagination.current_page + 1))"
-          :disabled="pagination.current_page >= pagination.total_pages || loading"
-          class="page-btn"
-        >
-          Next
-        </button>
       </div>
     </div>
   </div>
@@ -202,6 +345,11 @@ export default {
       isDragover: false,
       uploadError: null,
       uploadProgressMessage: 'Uploading file...',
+      showUploadModal: false,
+      showEvaluationsModal: false,
+      selectedFile: null,
+      fileEvaluations: [],
+      loadingEvaluations: false,
       pagination: {
         current_page: 1,
         total_pages: 1,
@@ -212,7 +360,7 @@ export default {
     }
   },
   
-  mounted() {
+  async mounted() {
     // Check authentication
     const token = localStorage.getItem('jwt_access');
     if (!token) {
@@ -221,7 +369,20 @@ export default {
     }
     
     // Load files on mount
-    this.loadFiles();
+    await this.loadFiles();
+    
+    // Check if we should open evaluations modal (from back navigation)
+    const fileId = this.$route.query.fileId;
+    if (fileId) {
+      // Find the file and open modal
+      const file = this.files.find(f => f.id === parseInt(fileId));
+      if (file) {
+        // Use nextTick to ensure DOM is ready
+        this.$nextTick(() => {
+          this.openFileEvaluationsModal(file);
+        });
+      }
+    }
   },
   
   beforeDestroy() {
@@ -300,6 +461,15 @@ export default {
       }
     },
     
+    // Close modal
+    closeModal() {
+      if (!this.isUploading) {
+        this.showUploadModal = false;
+        this.uploadError = null;
+        this.isDragover = false;
+      }
+    },
+    
     // Upload file
     async uploadFile(file) {
       // Validate file type
@@ -345,6 +515,10 @@ export default {
         
         const uploadedFile = response.data.data || response.data;
         this.$toast.success('File uploaded successfully!');
+        
+        // Close modal after successful upload
+        this.showUploadModal = false;
+        this.isDragover = false;
         
         // Reload files list - use current page or default to 1
         const currentPage = this.pagination.current_page || 1;
@@ -419,6 +593,98 @@ export default {
         name: 'NewEvaluation', 
         query: { fileId: file.id } 
       });
+    },
+    
+    // Open file evaluations modal
+    async openFileEvaluationsModal(file) {
+      this.selectedFile = file;
+      this.showEvaluationsModal = true;
+      this.fileEvaluations = [];
+      await this.loadFileEvaluations(file.id);
+    },
+    
+    // Close evaluations modal
+    closeEvaluationsModal() {
+      this.showEvaluationsModal = false;
+      this.selectedFile = null;
+      this.fileEvaluations = [];
+    },
+    
+    // Load evaluations for a specific file
+    async loadFileEvaluations(fileId) {
+      this.loadingEvaluations = true;
+      
+      try {
+        const response = await this.$http.secured.get('/api/evaluations', {
+          params: {
+            uploaded_file_id: fileId,
+            page: 1,
+            per_page: 100 // Get all evaluations for this file
+          }
+        });
+        
+        const data = response.data.data || response.data;
+        this.fileEvaluations = data.evaluations || [];
+        
+      } catch (error) {
+        console.error('Failed to load file evaluations:', error);
+        if (error.response && error.response.status === 401) {
+          this.$router.push('/login');
+        } else {
+          this.$toast.error('Failed to load evaluations. Please try again.');
+        }
+      } finally {
+        this.loadingEvaluations = false;
+      }
+    },
+    
+    // Navigate to evaluation details
+    navigateToEvaluation(evaluationId) {
+      this.closeEvaluationsModal();
+      this.$router.push({ 
+        name: 'EvaluationResults', 
+        params: { id: evaluationId } 
+      });
+    },
+    
+    // Evaluate with selected file
+    evaluateWithFile() {
+      if (this.selectedFile && this.selectedFile.status === 'ready') {
+        const fileId = this.selectedFile.id;
+        this.closeEvaluationsModal();
+        // Use nextTick to ensure modal closes before navigation
+        this.$nextTick(() => {
+          this.$router.push({ 
+            name: 'NewEvaluation', 
+            query: { 
+              fileId: fileId,
+              from: 'files'
+            } 
+          });
+        });
+      }
+    },
+    
+    // Get evaluation status class
+    getEvaluationStatusClass(status) {
+      const statusMap = {
+        'completed': 'status-completed',
+        'processing': 'status-processing',
+        'failed': 'status-failed',
+        'pending': 'status-pending'
+      };
+      return statusMap[status] || 'status-pending';
+    },
+    
+    // Get evaluation status label
+    getEvaluationStatusLabel(status) {
+      const labelMap = {
+        'completed': 'Completed',
+        'processing': 'Processing',
+        'failed': 'Failed',
+        'pending': 'Pending'
+      };
+      return labelMap[status] || 'Pending';
     },
     
     // Poll status for a specific file
@@ -537,51 +803,254 @@ export default {
 <style scoped>
 .files-page {
   min-height: 100vh;
-  background: #f7f7f8;
-  padding: 40px;
+  background: #f8fafc;
+  padding: 40px 20px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .page-header {
-  margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 40px;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 
-.page-header h1 {
-  font-size: 32px;
-  font-weight: 600;
+.header-content {
+  flex: 1;
+}
+
+.page-title {
+  font-size: 48px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #F97B22, #FF8C42, #FFB366);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px 0;
+  line-height: 1.1;
+}
+
+.subtitle-wrapper {
+  margin-top: 4px;
+}
+
+.page-subtitle {
+  font-size: 19px;
+  color: #4b5563;
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.01em;
+}
+
+.subtitle-icon {
+  display: flex;
+  align-items: center;
+  color: #3B82F6;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.subtitle-text {
+  color: #565869;
+}
+
+.upload-files-btn {
+  background: linear-gradient(135deg, #2563EB, #3B82F6, #60A5FA);
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-files-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.upload-files-btn:hover::before {
+  left: 100%;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.btn-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn-text {
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.upload-files-btn:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  background: linear-gradient(135deg, #3B82F6, #60A5FA, #93C5FD);
+}
+
+.upload-files-btn:hover .btn-icon-wrapper {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.upload-files-btn:active {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+  padding: 20px;
+}
+
+.modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: #565869;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  background: #f3f4f6;
+  color: #2d333a;
+}
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.modal-header h2 {
+  font-size: 24px;
+  font-weight: 700;
   color: #2d333a;
   margin: 0 0 8px 0;
 }
 
-.page-subtitle {
-  font-size: 16px;
+.modal-header p {
+  font-size: 14px;
   color: #565869;
   margin: 0;
 }
 
-/* Upload Section */
-.upload-section {
-  margin-bottom: 40px;
-}
-
 .upload-zone {
   border: 2px dashed #d1d5db;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 48px 24px;
   text-align: center;
-  background: white;
-  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .upload-zone:hover {
-  border-color: #10a37f;
-  background: #f9fafb;
+  border-color: #3B82F6;
+  background: rgba(59, 130, 246, 0.05);
 }
 
 .upload-zone.dragover {
-  border-color: #10a37f;
-  background: #f0fdf4;
+  border-color: #3B82F6;
+  background: rgba(59, 130, 246, 0.1);
+  transform: scale(1.02);
 }
 
 .upload-zone.uploading {
@@ -590,7 +1059,7 @@ export default {
 }
 
 .upload-content svg {
-  color: #10a37f;
+  color: #3B82F6;
   margin-bottom: 16px;
 }
 
@@ -604,24 +1073,26 @@ export default {
 .upload-content p {
   font-size: 14px;
   color: #565869;
-  margin: 0 0 16px 0;
+  margin: 0 0 24px 0;
 }
 
 .upload-btn {
-  background: #10a37f;
+  background: linear-gradient(135deg, #2563EB, #3B82F6);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 12px 24px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .upload-btn:hover {
-  background: #0d8f68;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  background: linear-gradient(135deg, #3B82F6, #60A5FA);
 }
 
 .upload-progress {
@@ -635,7 +1106,7 @@ export default {
   width: 40px;
   height: 40px;
   border: 4px solid #e5e7eb;
-  border-top-color: #10a37f;
+  border-top-color: #3B82F6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -660,42 +1131,46 @@ export default {
 /* Files Section */
 .files-section {
   background: white;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .section-header h2 {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 28px;
+  font-weight: 700;
   color: #2d333a;
   margin: 0;
 }
 
 .refresh-btn {
-  background: transparent;
+  background: white;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 8px 16px;
+  border-radius: 10px;
+  padding: 10px 20px;
   font-size: 14px;
+  font-weight: 500;
   color: #565869;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .refresh-btn:hover:not(:disabled) {
   background: #f9fafb;
-  border-color: #10a37f;
-  color: #10a37f;
+  border-color: #F97B22;
+  color: #F97B22;
+  transform: translateY(-1px);
 }
 
 .refresh-btn:disabled {
@@ -706,73 +1181,160 @@ export default {
 .loading-state,
 .empty-state {
   text-align: center;
-  padding: 64px 24px;
+  padding: 80px 24px;
   color: #565869;
 }
 
 .empty-state svg {
   color: #d1d5db;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .empty-state h3 {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 600;
   color: #2d333a;
   margin: 0 0 8px 0;
 }
 
 .empty-state p {
-  font-size: 14px;
-  margin: 0;
+  font-size: 16px;
+  margin: 0 0 24px 0;
+  color: #565869;
 }
 
-/* Files List */
-.files-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.btn-primary-empty {
+  background: linear-gradient(135deg, #F97B22, #FF8C42);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(249, 123, 34, 0.3);
+}
+
+.btn-primary-empty:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(249, 123, 34, 0.4);
+  background: linear-gradient(135deg, #FF8C42, #FFB366);
+}
+
+/* Files Grid */
+.files-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
 .file-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
+  background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.file-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #F97B22, #FF8C42, #FFB366);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
 }
 
 .file-card:hover {
-  border-color: #d1d5db;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-color: #F97B22;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
 }
 
-.file-info {
+.file-card:hover::before {
+  transform: scaleX(1);
+}
+
+.card-header {
   display: flex;
+  justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
-  flex: 1;
-  min-width: 0;
+  margin-bottom: 16px;
 }
 
-.file-icon {
-  color: #ef4444;
+.file-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, rgba(249, 123, 34, 0.1), rgba(255, 140, 66, 0.1));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #F97B22;
   flex-shrink: 0;
 }
 
-.file-details {
-  flex: 1;
-  min-width: 0;
+.card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px;
+  color: #565869;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  width: 36px;
+  height: 36px;
+}
+
+.icon-btn:hover {
+  background: #f9fafb;
+  transform: scale(1.1);
+}
+
+.re-evaluate-icon:hover {
+  border-color: #10B981;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.delete-icon:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .file-name {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #2d333a;
-  margin: 0 0 8px 0;
+  margin: 0;
   word-break: break-word;
+  line-height: 1.4;
 }
 
 .file-meta {
@@ -781,14 +1343,13 @@ export default {
   gap: 8px;
   font-size: 14px;
   color: #565869;
-  margin-bottom: 8px;
 }
 
 .file-separator {
   color: #d1d5db;
 }
 
-.file-status {
+.file-status-row {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -796,10 +1357,12 @@ export default {
 }
 
 .status-badge {
-  padding: 4px 12px;
+  padding: 6px 14px;
   border-radius: 12px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
 }
 
 .status-ready {
@@ -823,7 +1386,7 @@ export default {
 }
 
 .progress-message {
-  font-size: 14px;
+  font-size: 13px;
   color: #565869;
   font-style: italic;
 }
@@ -831,45 +1394,13 @@ export default {
 .error-text {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: 12px;
   color: #dc2626;
-}
-
-.file-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.action-btn {
-  background: transparent;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
   padding: 8px 12px;
-  font-size: 14px;
-  color: #565869;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.action-btn:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
-}
-
-.re-evaluate-btn:hover {
-  border-color: #10a37f;
-  color: #10a37f;
-}
-
-.delete-btn:hover {
-  border-color: #ef4444;
-  color: #ef4444;
+  background: #fef2f2;
+  border-radius: 8px;
+  margin-top: 4px;
 }
 
 /* Pagination */
@@ -878,162 +1409,376 @@ export default {
   justify-content: center;
   align-items: center;
   gap: 16px;
-  margin-top: 24px;
-  padding-top: 24px;
+  margin-top: 32px;
+  padding-top: 32px;
   border-top: 1px solid #e5e7eb;
 }
 
 .page-btn {
   background: white;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
-  padding: 8px 16px;
+  border-radius: 10px;
+  padding: 10px 20px;
   font-size: 14px;
+  font-weight: 500;
   color: #565869;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .page-btn:hover:not(:disabled) {
   background: #f9fafb;
-  border-color: #10a37f;
-  color: #10a37f;
+  border-color: #F97B22;
+  color: #F97B22;
+  transform: translateY(-1px);
 }
 
 .page-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .page-info {
   font-size: 14px;
+  font-weight: 500;
   color: #565869;
 }
 
-/* Dark Theme */
-.dark-theme .files-page {
-  background: #2d2d30;
-}
-
-.dark-theme .page-header h1 {
-  color: white;
-}
-
-.dark-theme .page-subtitle {
-  color: #d1d5db;
-}
-
-.dark-theme .upload-zone {
-  background: #343541;
-  border-color: #4d4d4f;
-}
-
-.dark-theme .upload-zone:hover {
-  background: #3a3a3f;
-  border-color: #10a37f;
-}
-
-.dark-theme .upload-zone.dragover {
-  background: #1f2937;
-}
-
-.dark-theme .upload-content h3 {
-  color: white;
-}
-
-.dark-theme .upload-content p {
-  color: #d1d5db;
-}
-
-.dark-theme .files-section {
-  background: #343541;
-}
-
-.dark-theme .section-header h2 {
-  color: white;
-}
-
-.dark-theme .refresh-btn {
-  border-color: #4d4d4f;
-  color: #d1d5db;
-}
-
-.dark-theme .refresh-btn:hover:not(:disabled) {
-  background: #3a3a3f;
-  border-color: #10a37f;
-  color: #10a37f;
-}
-
-.dark-theme .empty-state h3 {
-  color: white;
-}
-
-.dark-theme .empty-state p {
-  color: #d1d5db;
-}
-
-.dark-theme .file-card {
-  background: #2d2d30;
-  border-color: #4d4d4f;
-}
-
-.dark-theme .file-card:hover {
-  border-color: #565869;
-}
-
-.dark-theme .file-name {
-  color: white;
-}
-
-.dark-theme .file-meta {
-  color: #d1d5db;
-}
-
-.dark-theme .action-btn {
-  border-color: #4d4d4f;
-  color: #d1d5db;
-}
-
-.dark-theme .action-btn:hover {
-  background: #3a3a3f;
-  border-color: #565869;
-}
-
-.dark-theme .pagination {
-  border-top-color: #4d4d4f;
-}
-
-.dark-theme .page-btn {
-  background: #343541;
-  border-color: #4d4d4f;
-  color: #d1d5db;
-}
-
-.dark-theme .page-btn:hover:not(:disabled) {
-  background: #3a3a3f;
-  border-color: #10a37f;
-  color: #10a37f;
-}
-
-.dark-theme .page-info {
-  color: #d1d5db;
-}
-
 /* Responsive */
+@media (max-width: 1024px) {
+  .files-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+}
+
 @media (max-width: 768px) {
   .files-page {
+    padding: 24px 16px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .page-title {
+    font-size: 36px;
+  }
+  
+  .upload-files-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .files-section {
+    padding: 24px;
+  }
+  
+  .files-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .refresh-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .modal-content {
+    padding: 24px;
+    margin: 20px;
+  }
+  
+  .upload-zone {
+    padding: 32px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 32px;
+  }
+  
+  .page-subtitle {
+    font-size: 16px;
+  }
+  
+  .files-section {
     padding: 20px;
   }
   
   .file-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
+    padding: 20px;
   }
   
-  .file-actions {
+  .modal-content {
+    padding: 20px;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .page-btn {
     width: 100%;
-    justify-content: flex-end;
+  }
+}
+
+/* File Evaluations Modal */
+.evaluations-modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 0;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+  overflow: hidden;
+}
+
+.evaluations-modal-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.file-info-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1;
+}
+
+.file-icon-header {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, rgba(249, 123, 34, 0.1), rgba(255, 140, 66, 0.1));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #F97B22;
+  flex-shrink: 0;
+}
+
+.evaluations-modal-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d333a;
+  margin: 0 0 4px 0;
+  word-break: break-word;
+}
+
+.file-meta-header {
+  font-size: 14px;
+  color: #565869;
+  margin: 0;
+}
+
+.evaluate-btn {
+  background: linear-gradient(135deg, #2563EB, #3B82F6);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  white-space: nowrap;
+}
+
+.evaluate-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  background: linear-gradient(135deg, #3B82F6, #60A5FA);
+}
+
+.evaluations-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 32px;
+}
+
+.evaluations-loading,
+.evaluations-empty {
+  text-align: center;
+  padding: 64px 24px;
+  color: #565869;
+}
+
+.evaluations-empty svg {
+  color: #d1d5db;
+  margin-bottom: 16px;
+}
+
+.evaluations-empty h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d333a;
+  margin: 0 0 8px 0;
+}
+
+.evaluations-empty p {
+  font-size: 14px;
+  margin: 0;
+  color: #565869;
+}
+
+.evaluations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.evaluation-item {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.evaluation-item:hover {
+  border-color: #3B82F6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  transform: translateY(-2px);
+}
+
+.evaluation-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.evaluation-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.evaluation-info {
+  flex: 1;
+}
+
+.evaluation-info h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d333a;
+  margin: 0 0 4px 0;
+}
+
+.evaluation-doc-type {
+  font-size: 14px;
+  color: #565869;
+  margin: 0 0 4px 0;
+}
+
+.evaluation-date {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.evaluation-status {
+  flex-shrink: 0;
+}
+
+.evaluation-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.stat-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-mini .stat-value {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.stat-mini .stat-label {
+  font-size: 11px;
+  color: #565869;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-completed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-processing {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-failed {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.status-pending {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+@media (max-width: 768px) {
+  .evaluations-modal-content {
+    max-height: 95vh;
+    margin: 10px;
+  }
+  
+  .evaluations-modal-header {
+    padding: 20px;
+    flex-direction: column;
+  }
+  
+  .evaluate-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .evaluations-content {
+    padding: 20px;
+  }
+  
+  .evaluation-stats {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 </style>

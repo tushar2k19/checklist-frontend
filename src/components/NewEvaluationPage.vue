@@ -2,7 +2,7 @@
   <div class="evaluation-page">
     <!-- Header -->
     <div class="page-header">
-      <button class="back-btn" @click="$router.push('/evaluations')" title="Back to Evaluations">
+      <button class="back-btn" @click="handleBack" title="Back">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
@@ -804,6 +804,23 @@ export default {
       } catch (error) {
         console.error('Failed to copy logs:', error);
         this.$toast.error('Failed to copy logs');
+      }
+    },
+    
+    // Handle Back Button
+    handleBack() {
+      const from = this.$route.query.from;
+      const fileId = this.$route.query.fileId;
+      
+      // If we came from Files page, go back to Files page with fileId to reopen modal
+      if (from === 'files' && fileId) {
+        this.$router.push({
+          name: 'FilesPage',
+          query: { fileId: fileId }
+        });
+      } else {
+        // Otherwise, go to evaluations page
+        this.$router.push('/evaluations');
       }
     },
     
