@@ -286,7 +286,7 @@
                 </td>
                 <td class="remarks-cell">
                   <div class="remarks-content">
-                    <p class="remarks-text">{{ row.remarks }}</p>
+                    <p class="remarks-text">{{ cleanCitations(row.remarks) }}</p>
                   </div>
                 </td>
               </tr>

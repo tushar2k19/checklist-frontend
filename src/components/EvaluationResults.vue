@@ -150,7 +150,7 @@
                       {{ result.status }}
                     </span>
                   </td>
-                  <td class="remarks-text">{{ result.remarks || '—' }}</td>
+                  <td class="remarks-text">{{ cleanRemarks(result.remarks) || '—' }}</td>
                 </tr>
               </tbody>
             </table>
@@ -317,6 +317,22 @@ export default {
         minute: '2-digit',
         timeZone: 'Asia/Kolkata'
       });
+    },
+    
+    // Clean remarks by removing citation patterns like 【12:12†filename.pdf】
+    cleanRemarks(remarks) {
+      if (!remarks) return '';
+      
+      // Remove citation patterns: 【anything】
+      let cleaned = remarks.replace(/【[^】]*】/g, '');
+      
+      // Remove dagger markers (†) that might be left behind
+      cleaned = cleaned.replace(/†/g, '');
+      
+      // Clean up extra whitespace
+      cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
+      
+      return cleaned;
     },
     
     // Format processing time
