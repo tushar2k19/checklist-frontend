@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Signin from '../components/Signin.vue'
-import ChecklistAnalyzer from '../components/ChecklistAnalyzer.vue'
 import FilesPage from '../components/FilesPage.vue'
 import NewEvaluationPage from '../components/NewEvaluationPage.vue'
 import EvaluationResults from '../components/EvaluationResults.vue'
