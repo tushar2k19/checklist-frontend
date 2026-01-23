@@ -177,9 +177,6 @@
               </div>
             </div>
           </div>
-          <button class="btn-checklist" @click="$router.push('/checklist')" title="Checklist Analyzer">
-            Checklist
-                </button>
           <!-- Assumptions & Limitations Component -->
           <AssumptionsLimitations :isDarkTheme="isDarkTheme" />
           <!-- Theme Toggle Button -->

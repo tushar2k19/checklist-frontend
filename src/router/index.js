@@ -19,12 +19,6 @@ const router = new Router({
       redirect: '/evaluations'
     },
     {
-      path: '/checklist',
-      name: 'ChecklistAnalyzer',
-      component: ChecklistAnalyzer,
-      meta: { requiresAuth: true }
-    },
-    {
       path: '/files',
       name: 'FilesPage',
       component: FilesPage,
