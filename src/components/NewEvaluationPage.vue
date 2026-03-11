@@ -1,18 +1,31 @@
 <template>
   <div class="evaluation-page">
-    <!-- Header -->
-    <div class="page-header">
-      <button class="back-btn" @click="handleBack" title="Back">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
-        Back
-      </button>
-      <div class="header-content">
-        <h1>New Evaluation</h1>
-        <p class="page-subtitle">Select scheme, document type, and file to start evaluation</p>
+    <div class="page-container">
+      <!-- Header -->
+      <div class="page-header">
+        <button class="back-btn" @click="handleBack" title="Back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Back
+        </button>
+        <div class="header-content">
+          <h1 class="page-title">New Evaluation</h1>
+          <div class="subtitle-wrapper">
+            <p class="page-subtitle">
+              <span class="subtitle-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14,2 14,8 20,8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+              </span>
+              <span class="subtitle-text">Select scheme, document type, and file to start evaluation</span>
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
 
     <!-- Form Section -->
     <div class="form-section">
@@ -280,6 +293,7 @@
           <span v-else>Start Evaluation</span>
         </button>
       </div>
+    </div>
     </div>
   </div>
 </template>
@@ -944,13 +958,30 @@ export default {
 <style scoped>
 .evaluation-page {
   min-height: 100vh;
-  background: #f7f7f8;
-  padding: 40px;
+  background: #f8fafc;
+  padding: 40px 20px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .page-header {
-  margin-bottom: 32px;
+  margin-bottom: 40px;
   display: flex;
   align-items: flex-start;
   gap: 16px;
@@ -960,54 +991,85 @@ export default {
   flex: 1;
 }
 
-.page-header h1 {
-  font-size: 32px;
-  font-weight: 600;
-  color: #2d333a;
+.page-title {
+  font-size: 48px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #F97B22, #FF8C42, #FFB366);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
   margin: 0 0 8px 0;
+  line-height: 1.1;
+}
+
+.subtitle-wrapper {
+  margin-top: 4px;
 }
 
 .page-subtitle {
-  font-size: 16px;
-  color: #565869;
+  font-size: 19px;
+  color: #4b5563;
   margin: 0;
+  font-weight: 500;
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.01em;
+}
+
+.subtitle-icon {
+  display: flex;
+  align-items: center;
+  color: #3B82F6;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.subtitle-text {
+  color: #565869;
 }
 
 .back-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: transparent;
-  border: 1px solid #e5e5e5;
-  padding: 8px 12px;
-  border-radius: 8px;
+  background: white;
+  border: 1px solid #d1d5db;
+  padding: 10px 20px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
   color: #565869;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   flex-shrink: 0;
   margin-top: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .back-btn:hover {
-  background: #f1f1f1;
-  border-color: #d1d5db;
-  color: #2d333a;
+  background: #f9fafb;
+  border-color: #F97B22;
+  color: #F97B22;
   transform: translateX(-2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .back-btn:focus {
-  outline: 2px solid #10a37f;
+  outline: 2px solid #F97B22;
   outline-offset: 2px;
 }
 
 .form-section {
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 32px;
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
 }
 
 .form-group {
@@ -1039,13 +1101,13 @@ export default {
 }
 
 .form-select:hover:not(:disabled) {
-  border-color: #10a37f;
+  border-color: #F97B22;
 }
 
 .form-select:focus {
   outline: none;
-  border-color: #10a37f;
-  box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+  border-color: #F97B22;
+  box-shadow: 0 0 0 3px rgba(249, 123, 34, 0.1);
 }
 
 .form-select:disabled {
@@ -1078,7 +1140,7 @@ export default {
   width: 20px;
   height: 20px;
   border: 3px solid #e5e7eb;
-  border-top-color: #10a37f;
+  border-top-color: #3B82F6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -1125,8 +1187,8 @@ export default {
 
 .checklist-container {
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 20px;
   background: #f9fafb;
 }
 
@@ -1152,17 +1214,37 @@ export default {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 12px;
+  padding: 16px;
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.checklist-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #F97B22, #FF8C42, #FFB366);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
 }
 
 .checklist-item:hover {
-  border-color: #10a37f;
-  background: #f0fdf4;
+  border-color: #F97B22;
+  background: rgba(249, 123, 34, 0.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.checklist-item:hover::before {
+  transform: scaleX(1);
 }
 
 .checklist-item input[type="checkbox"] {
@@ -1197,14 +1279,15 @@ export default {
 }
 
 .tab-btn:hover:not(:disabled) {
-  border-color: #10a37f;
-  color: #10a37f;
+  border-color: #F97B22;
+  color: #F97B22;
 }
 
 .tab-btn.active {
-  background: #10a37f;
-  border-color: #10a37f;
+  background: linear-gradient(135deg, #F97B22, #FF8C42);
+  border-color: #F97B22;
   color: white;
+  box-shadow: 0 2px 8px rgba(249, 123, 34, 0.3);
 }
 
 .tab-btn:disabled {
@@ -1218,22 +1301,23 @@ export default {
 
 .upload-zone {
   border: 2px dashed #d1d5db;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 48px 24px;
   text-align: center;
-  background: white;
-  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .upload-zone:hover {
-  border-color: #10a37f;
-  background: #f9fafb;
+  border-color: #3B82F6;
+  background: rgba(59, 130, 246, 0.05);
 }
 
 .upload-zone.dragover {
-  border-color: #10a37f;
-  background: #f0fdf4;
+  border-color: #3B82F6;
+  background: rgba(59, 130, 246, 0.1);
+  transform: scale(1.02);
 }
 
 .upload-zone.uploading {
@@ -1242,7 +1326,7 @@ export default {
 }
 
 .upload-content svg {
-  color: #10a37f;
+  color: #3B82F6;
   margin-bottom: 16px;
 }
 
@@ -1260,20 +1344,22 @@ export default {
 }
 
 .upload-btn {
-  background: #10a37f;
+  background: linear-gradient(135deg, #2563EB, #3B82F6);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 12px 24px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .upload-btn:hover {
-  background: #0d8f68;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #3B82F6, #60A5FA);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
 
 .upload-progress {
@@ -1288,16 +1374,16 @@ export default {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: #f0fdf4;
-  border: 1px solid #10a37f;
-  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid #3B82F6;
+  border-radius: 10px;
   margin-top: 16px;
   font-size: 14px;
   color: #2d333a;
 }
 
 .selected-file svg {
-  color: #10a37f;
+  color: #3B82F6;
   flex-shrink: 0;
 }
 
@@ -1366,13 +1452,15 @@ export default {
 }
 
 .btn-primary {
-  background: #10a37f;
+  background: linear-gradient(135deg, #F97B22, #FF8C42);
   color: white;
+  box-shadow: 0 4px 12px rgba(249, 123, 34, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #0d8f68;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #FF8C42, #FFB366);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(249, 123, 34, 0.4);
 }
 
 .btn-primary:disabled {
@@ -1389,8 +1477,9 @@ export default {
 
 .btn-secondary:hover:not(:disabled) {
   background: #f9fafb;
-  border-color: #10a37f;
-  color: #10a37f;
+  border-color: #F97B22;
+  color: #F97B22;
+  transform: translateY(-1px);
 }
 
 .btn-secondary:disabled {
@@ -1445,8 +1534,8 @@ export default {
 
 .toggle-logs-btn:hover {
   background: #f3f4f6;
-  border-color: #10a37f;
-  color: #10a37f;
+  border-color: #F97B22;
+  color: #F97B22;
 }
 
 .logs-content {
@@ -1472,18 +1561,22 @@ export default {
   position: absolute;
   top: 20px;
   right: 20px;
-  background: #10a37f;
+  background: linear-gradient(135deg, #2563EB, #3B82F6);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 6px 12px;
   font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
 .copy-logs-btn:hover {
-  background: #0d8f68;
+  background: linear-gradient(135deg, #3B82F6, #60A5FA);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
 .dark-theme .logs-section {
@@ -1645,12 +1738,12 @@ export default {
 /* Responsive */
 @media (max-width: 768px) {
   .evaluation-page {
-    padding: 20px;
+    padding: 24px 16px;
   }
   
   .page-header {
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
   }
   
   .back-btn {
@@ -1658,8 +1751,8 @@ export default {
     margin-top: 0;
   }
   
-  .page-header h1 {
-    font-size: 24px;
+  .page-title {
+    font-size: 36px;
   }
   
   .form-section {
@@ -1672,6 +1765,20 @@ export default {
   
   .btn {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 32px;
+  }
+  
+  .page-subtitle {
+    font-size: 16px;
+  }
+  
+  .form-section {
+    padding: 20px;
   }
 }
 </style>

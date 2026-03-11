@@ -1,21 +1,36 @@
 <template>
   <div class="analysis-dashboard-page">
-    <!-- Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <h1>Evaluations</h1>
-        <p class="page-subtitle">View and manage your past evaluations</p>
+    <div class="page-container">
+      <!-- Header -->
+      <div class="page-header">
+        <div class="header-content">
+          <h1 class="page-title">Evaluations</h1>
+          <div class="subtitle-wrapper">
+            <p class="page-subtitle">
+              <span class="subtitle-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14,2 14,8 20,8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+              </span>
+              <span class="subtitle-text">View and manage your past evaluations</span>
+            </p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button @click="navigateToNewEvaluation" class="btn btn-primary">
+            <div class="btn-icon-wrapper">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </div>
+            <span class="btn-text">New Evaluation</span>
+          </button>
+        </div>
       </div>
-      <div class="header-actions">
-        <button @click="navigateToNewEvaluation" class="btn btn-primary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          New Evaluation
-        </button>
-      </div>
-    </div>
 
     <!-- Filters Section -->
     <div class="filters-section">
@@ -165,24 +180,32 @@
           class="evaluation-card"
         >
           <div class="card-header">
-            <div class="card-title">
-              <h3 @click="navigateToEvaluation(evaluation.id)" class="card-title-clickable">{{ evaluation.filename }}</h3>
-              <span class="status-badge" :class="getStatusClass(evaluation.status)">
-                {{ getStatusLabel(evaluation.status) }}
-              </span>
+            <div class="evaluation-icon-wrapper">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
+              </svg>
             </div>
-            <div class="card-header-actions">
-              <div class="card-date">{{ formatDate(evaluation.date) }}</div>
-              <button 
-                @click.stop="deleteEvaluation(evaluation)"
-                class="delete-btn"
-                title="Delete evaluation"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3,6 5,6 21,6"/>
-                  <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"/>
-                </svg>
-              </button>
+            <div class="card-title-section">
+              <div class="card-title">
+                <h3 @click="navigateToEvaluation(evaluation.id)" class="card-title-clickable">{{ evaluation.filename }}</h3>
+                <span class="status-badge" :class="getStatusClass(evaluation.status)">
+                  {{ getStatusLabel(evaluation.status) }}
+                </span>
+              </div>
+              <div class="card-header-actions">
+                <div class="card-date">{{ formatDate(evaluation.date) }}</div>
+                <button 
+                  @click.stop="deleteEvaluation(evaluation)"
+                  class="delete-btn"
+                  title="Delete evaluation"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3,6 5,6 21,6"/>
+                    <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -244,6 +267,7 @@
           Next
         </button>
       </div>
+    </div>
     </div>
   </div>
 </template>
@@ -550,35 +574,79 @@ export default {
 <style scoped>
 .analysis-dashboard-page {
   min-height: 100vh;
-  background: #f7f7f8;
-  padding: 40px;
+  background: #f8fafc;
+  padding: 40px 20px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
+  gap: 24px;
   flex-wrap: wrap;
-  gap: 16px;
 }
 
 .header-content {
   flex: 1;
 }
 
-.page-header h1 {
-  font-size: 32px;
-  font-weight: 600;
-  color: #2d333a;
+.page-title {
+  font-size: 48px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #F97B22, #FF8C42, #FFB366);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
   margin: 0 0 8px 0;
+  line-height: 1.1;
+}
+
+.subtitle-wrapper {
+  margin-top: 4px;
 }
 
 .page-subtitle {
-  font-size: 16px;
-  color: #565869;
+  font-size: 19px;
+  color: #4b5563;
   margin: 0;
+  font-weight: 500;
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.01em;
+}
+
+.subtitle-icon {
+  display: flex;
+  align-items: center;
+  color: #3B82F6;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.subtitle-text {
+  color: #565869;
 }
 
 .header-actions {
@@ -592,9 +660,10 @@ export default {
 
 .filters-card {
   background: white;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 16px;
+  padding: 32px;
   border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .filters-grid {
@@ -632,13 +701,13 @@ export default {
 }
 
 .filter-select:hover:not(:disabled) {
-  border-color: #10a37f;
+  border-color: #F97B22;
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: #10a37f;
-  box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+  border-color: #F97B22;
+  box-shadow: 0 0 0 3px rgba(249, 123, 34, 0.1);
 }
 
 .filter-select:disabled {
@@ -691,7 +760,7 @@ export default {
   width: 40px;
   height: 40px;
   border: 4px solid #e5e7eb;
-  border-top-color: #10a37f;
+  border-top-color: #3B82F6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 16px;
@@ -710,18 +779,19 @@ export default {
 
 .evaluations-section {
   background: white;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 16px;
+  padding: 32px;
   border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .section-header {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .section-header h2 {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 28px;
+  font-weight: 700;
   color: #2d333a;
   margin: 0;
 }
@@ -729,22 +799,41 @@ export default {
 .evaluations-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
-  margin-bottom: 24px;
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
 .evaluation-card {
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 20px;
-  transition: all 0.2s ease;
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.evaluation-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #F97B22, #FF8C42, #FFB366);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
 }
 
 .evaluation-card:hover {
-  border-color: #10a37f;
-  box-shadow: 0 4px 12px rgba(16, 163, 127, 0.1);
-  transform: translateY(-2px);
+  border-color: #F97B22;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.evaluation-card:hover::before {
+  transform: scaleX(1);
 }
 
 .card-body {
@@ -752,9 +841,30 @@ export default {
 }
 
 .card-header {
+  display: flex;
+  gap: 16px;
   margin-bottom: 16px;
   padding-bottom: 16px;
   border-bottom: 1px solid #e5e7eb;
+}
+
+.evaluation-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, rgba(249, 123, 34, 0.1), rgba(255, 140, 66, 0.1));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #F97B22;
+  flex-shrink: 0;
+}
+
+.card-title-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .card-title {
@@ -762,16 +872,16 @@ export default {
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 8px;
 }
 
 .card-title h3 {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #2d333a;
   margin: 0;
   flex: 1;
   word-break: break-word;
+  line-height: 1.4;
 }
 
 .card-title-clickable {
@@ -779,7 +889,7 @@ export default {
 }
 
 .card-title-clickable:hover {
-  color: #10a37f;
+  color: #F97B22;
 }
 
 .card-header-actions {
@@ -920,26 +1030,28 @@ export default {
   justify-content: center;
   align-items: center;
   gap: 16px;
-  margin-top: 24px;
-  padding-top: 24px;
+  margin-top: 32px;
+  padding-top: 32px;
   border-top: 1px solid #e5e7eb;
 }
 
 .page-btn {
   background: white;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
-  padding: 8px 16px;
+  border-radius: 10px;
+  padding: 10px 20px;
   font-size: 14px;
+  font-weight: 500;
   color: #565869;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .page-btn:hover:not(:disabled) {
   background: #f9fafb;
-  border-color: #10a37f;
-  color: #10a37f;
+  border-color: #F97B22;
+  color: #F97B22;
+  transform: translateY(-1px);
 }
 
 .page-btn:disabled {
@@ -958,7 +1070,7 @@ export default {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   border: none;
   display: inline-flex;
   align-items: center;
@@ -966,13 +1078,61 @@ export default {
 }
 
 .btn-primary {
-  background: #10a37f;
+  background: linear-gradient(135deg, #2563EB, #3B82F6, #60A5FA);
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
   color: white;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.btn-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn-text {
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #0d8f68;
-  transform: translateY(-1px);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  background: linear-gradient(135deg, #3B82F6, #60A5FA, #93C5FD);
+}
+
+.btn-primary:hover:not(:disabled) .btn-icon-wrapper {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
 .btn-primary:disabled {
@@ -989,8 +1149,9 @@ export default {
 
 .btn-secondary:hover:not(:disabled) {
   background: #f9fafb;
-  border-color: #10a37f;
-  color: #10a37f;
+  border-color: #F97B22;
+  color: #F97B22;
+  transform: translateY(-1px);
 }
 
 .btn-secondary:disabled {
@@ -1138,13 +1299,35 @@ export default {
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .evaluations-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+}
+
 @media (max-width: 768px) {
   .analysis-dashboard-page {
-    padding: 20px;
+    padding: 24px 16px;
   }
   
   .page-header {
     flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .page-title {
+    font-size: 36px;
+  }
+  
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .filters-card {
+    padding: 24px;
   }
   
   .filters-grid {
@@ -1155,12 +1338,48 @@ export default {
     flex-direction: column;
   }
   
+  .evaluations-section {
+    padding: 24px;
+  }
+  
   .evaluations-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
   
   .summary-stats {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 32px;
+  }
+  
+  .page-subtitle {
+    font-size: 16px;
+  }
+  
+  .filters-card {
+    padding: 20px;
+  }
+  
+  .evaluations-section {
+    padding: 20px;
+  }
+  
+  .evaluation-card {
+    padding: 20px;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .page-btn {
+    width: 100%;
   }
 }
 </style>

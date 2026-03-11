@@ -1,46 +1,59 @@
 <template>
   <div class="evaluation-results-page">
-    <!-- Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <h1>Evaluation Results</h1>
-        <p class="page-subtitle">Detailed analysis results for this evaluation</p>
+    <div class="page-container">
+      <!-- Header -->
+      <div class="page-header">
+        <div class="header-content">
+          <h1 class="page-title">Evaluation Results</h1>
+          <div class="subtitle-wrapper">
+            <p class="page-subtitle">
+              <span class="subtitle-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14,2 14,8 20,8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+              </span>
+              <span class="subtitle-text">Detailed analysis results for this evaluation</span>
+            </p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button 
+            @click="exportToPDF" 
+            class="btn btn-secondary" 
+            :disabled="!evaluation || !evaluation.results || evaluation.results.length === 0"
+            title="Download PDF"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Download PDF
+          </button>
+          <button 
+            @click="exportToExcel" 
+            class="btn btn-secondary" 
+            :disabled="!evaluation || !evaluation.results || evaluation.results.length === 0"
+            title="Download Excel"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Download Excel
+          </button>
+          <button @click="navigateBack" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Back
+          </button>
+        </div>
       </div>
-      <div class="header-actions">
-        <button 
-          @click="exportToPDF" 
-          class="btn btn-secondary" 
-          :disabled="!evaluation || !evaluation.results || evaluation.results.length === 0"
-          title="Download PDF"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Download PDF
-        </button>
-        <button 
-          @click="exportToExcel" 
-          class="btn btn-secondary" 
-          :disabled="!evaluation || !evaluation.results || evaluation.results.length === 0"
-          title="Download Excel"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Download Excel
-        </button>
-        <button @click="navigateBack" class="btn btn-secondary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          Back
-        </button>
-      </div>
-    </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="loading-state">
@@ -229,6 +242,7 @@
           Re-evaluate
         </button>
       </div>
+    </div>
     </div>
   </div>
 </template>
@@ -991,35 +1005,79 @@ export default {
 <style scoped>
 .evaluation-results-page {
   min-height: 100vh;
-  background: #f7f7f8;
-  padding: 40px;
+  background: #f8fafc;
+  padding: 40px 20px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
+  gap: 24px;
   flex-wrap: wrap;
-  gap: 16px;
 }
 
 .header-content {
   flex: 1;
 }
 
-.page-header h1 {
-  font-size: 32px;
-  font-weight: 600;
-  color: #2d333a;
+.page-title {
+  font-size: 48px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #F97B22, #FF8C42, #FFB366);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
   margin: 0 0 8px 0;
+  line-height: 1.1;
+}
+
+.subtitle-wrapper {
+  margin-top: 4px;
 }
 
 .page-subtitle {
-  font-size: 16px;
-  color: #565869;
+  font-size: 19px;
+  color: #4b5563;
   margin: 0;
+  font-weight: 500;
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.01em;
+}
+
+.subtitle-icon {
+  display: flex;
+  align-items: center;
+  color: #3B82F6;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.subtitle-text {
+  color: #565869;
 }
 
 .header-actions {
@@ -1055,7 +1113,7 @@ export default {
   width: 40px;
   height: 40px;
   border: 4px solid #e5e7eb;
-  border-top-color: #10a37f;
+  border-top-color: #3B82F6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 16px;
@@ -1073,16 +1131,17 @@ export default {
 
 .section-card {
   background: white;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 16px;
+  padding: 32px;
   border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .section-card h2 {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 700;
   color: #2d333a;
-  margin: 0 0 20px 0;
+  margin: 0 0 24px 0;
 }
 
 .metadata-grid {
@@ -1145,29 +1204,48 @@ export default {
 .summary-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  gap: 24px;
 }
 
 .summary-card {
   background: white;
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 24px;
   border: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
   gap: 16px;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #F97B22, #FF8C42, #FFB366);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
 }
 
 .summary-card:hover {
-  border-color: #d1d5db;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-color: #F97B22;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.summary-card:hover::before {
+  transform: scaleX(1);
 }
 
 .summary-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1175,22 +1253,22 @@ export default {
 }
 
 .summary-icon.compliant {
-  background: #dcfce7;
+  background: linear-gradient(135deg, rgba(22, 101, 52, 0.1), rgba(34, 197, 94, 0.1));
   color: #166534;
 }
 
 .summary-icon.partial {
-  background: #fef3c7;
+  background: linear-gradient(135deg, rgba(146, 64, 14, 0.1), rgba(217, 119, 6, 0.1));
   color: #92400e;
 }
 
 .summary-icon.non-compliant {
-  background: #fef2f2;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.1));
   color: #dc2626;
 }
 
 .summary-icon.total {
-  background: #e0e7ff;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(59, 130, 246, 0.1));
   color: #3730a3;
 }
 
@@ -1219,19 +1297,21 @@ export default {
 .results-table {
   width: 100%;
   border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .results-table thead {
-  background: #f9fafb;
+  background: linear-gradient(135deg, #f9fafb, #f3f4f6);
   border-bottom: 2px solid #e5e7eb;
 }
 
 .results-table th {
-  padding: 12px 16px;
+  padding: 16px;
   text-align: left;
   font-size: 12px;
-  font-weight: 600;
-  color: #565869;
+  font-weight: 700;
+  color: #2d333a;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -1239,10 +1319,12 @@ export default {
 .results-table td {
   padding: 16px;
   border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s ease;
 }
 
 .result-row:hover {
   background: #f9fafb;
+  transform: scale(1.01);
 }
 
 .item-text {
@@ -1327,21 +1409,25 @@ export default {
   position: absolute;
   top: 20px;
   right: 20px;
-  background: #10a37f;
+  background: linear-gradient(135deg, #2563EB, #3B82F6);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 8px 16px;
   font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 6px;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
 .copy-logs-btn:hover {
-  background: #0d8f68;
+  background: linear-gradient(135deg, #3B82F6, #60A5FA);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
 .toggle-logs-btn {
@@ -1357,8 +1443,8 @@ export default {
 
 .toggle-logs-btn:hover {
   background: #f3f4f6;
-  border-color: #10a37f;
-  color: #10a37f;
+  border-color: #F97B22;
+  color: #F97B22;
 }
 
 .actions-section {
@@ -1372,11 +1458,11 @@ export default {
 
 .btn {
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   border: none;
   display: inline-flex;
   align-items: center;
@@ -1384,25 +1470,27 @@ export default {
 }
 
 .btn-primary {
-  background: #10a37f;
+  background: linear-gradient(135deg, #F97B22, #FF8C42);
   color: white;
+  box-shadow: 0 4px 12px rgba(249, 123, 34, 0.3);
 }
 
-.btn-primary:hover {
-  background: #0d8f68;
-  transform: translateY(-1px);
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #FF8C42, #FFB366);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(249, 123, 34, 0.4);
 }
 
 .btn-secondary {
-  background: white;
-  color: #565869;
-  border: 1px solid #d1d5db;
+  background: linear-gradient(135deg, #2563EB, #3B82F6);
+  color: white;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-.btn-secondary:hover {
-  background: #f9fafb;
-  border-color: #10a37f;
-  color: #10a37f;
+.btn-secondary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #3B82F6, #60A5FA);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
 
 .btn:disabled {
@@ -1528,13 +1616,40 @@ export default {
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .summary-cards {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+  }
+}
+
 @media (max-width: 768px) {
   .evaluation-results-page {
-    padding: 20px;
+    padding: 24px 16px;
   }
   
   .page-header {
     flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .page-title {
+    font-size: 36px;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .section-card {
+    padding: 24px;
   }
   
   .metadata-grid {
@@ -1548,9 +1663,19 @@ export default {
   .actions-section {
     flex-direction: column;
   }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 32px;
+  }
   
-  .btn {
-    width: 100%;
+  .page-subtitle {
+    font-size: 16px;
+  }
+  
+  .section-card {
+    padding: 20px;
   }
 }
 </style>
