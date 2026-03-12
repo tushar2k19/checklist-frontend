@@ -41,8 +41,9 @@
           <span class="nav-label">Evaluations</span>
         </button>
 
-        <button 
-          class="nav-item" 
+        <button
+          v-if="showSettings"
+          class="nav-item"
           :class="{ active: isActiveRoute('/settings') }"
           @click="navigateTo('/settings')"
         >
@@ -106,8 +107,9 @@
         <span>Evaluations</span>
       </button>
 
-      <button 
-        class="mobile-nav-item" 
+      <button
+        v-if="showSettings"
+        class="mobile-nav-item"
         :class="{ active: isActiveRoute('/settings') }"
         @click="navigateTo('/settings')"
       >
@@ -139,7 +141,8 @@ export default {
   data() {
     return {
       mobileMenuOpen: false,
-      isMobile: false
+      isMobile: false,
+      showSettings: false
     }
   },
   computed: {

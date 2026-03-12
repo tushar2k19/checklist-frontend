@@ -182,7 +182,12 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="result in evaluation.results" :key="result.id" class="result-row">
+                <tr
+                  v-for="result in evaluation.results"
+                  :key="result.id"
+                  class="result-row"
+                  @contextmenu.prevent="onRowContextMenu($event, result)"
+                >
                   <td class="item-text">{{ result.item_text }}</td>
                   <td>
                     <span class="result-status-badge" :class="getResultStatusClass(result.status)">
@@ -200,8 +205,8 @@
         </div>
       </div>
 
-      <!-- Logs Section -->
-      <div v-if="evaluationLogs" class="logs-section">
+      <!-- Logs Section (hidden for now) -->
+      <div v-if="showLogsSection && evaluationLogs" class="logs-section">
         <div class="section-card">
           <div class="logs-header">
             <h2>Evaluation Logs</h2>
@@ -243,6 +248,25 @@
         </button>
       </div>
     </div>
+
+    <div
+      v-if="rowContextMenu.visible"
+      class="row-context-menu"
+      :style="{ top: `${rowContextMenu.y}px`, left: `${rowContextMenu.x}px` }"
+    >
+      <button class="row-context-menu-item" @click.stop="openFollowupFromMenu">
+        Follow-up question
+      </button>
+    </div>
+
+    <FollowupQuestionModal
+      v-if="showFollowupModal && followupTargetResult"
+      :visible="showFollowupModal"
+      :evaluation-id="$route.params.id"
+      :result="followupTargetResult"
+      :filename="evaluation && evaluation.filename ? evaluation.filename : ''"
+      @close="closeFollowupModal"
+    />
     </div>
   </div>
 </template>
@@ -252,9 +276,13 @@ import pdfMake from 'pdfmake/build/pdfmake'
 import pdfFonts from 'pdfmake/build/vfs_fonts'
 pdfMake.vfs = pdfFonts.vfs
 import * as XLSX from 'xlsx'
+import FollowupQuestionModal from './FollowupQuestionModal.vue'
 
 export default {
   name: 'EvaluationResults',
+  components: {
+    FollowupQuestionModal
+  },
   data() {
     return {
       evaluation: null,
@@ -262,7 +290,16 @@ export default {
       error: null,
       evaluationLogs: null,
       showLogs: false,
-      fileId: null
+      showLogsSection: false,
+      fileId: null,
+      showFollowupModal: false,
+      followupTargetResult: null,
+      rowContextMenu: {
+        visible: false,
+        x: 0,
+        y: 0,
+        result: null
+      }
     }
   },
   
@@ -276,6 +313,10 @@ export default {
     
     // Load evaluation on mount
     this.loadEvaluation();
+    document.addEventListener('click', this.hideRowContextMenu);
+  },
+  beforeDestroy() {
+    document.removeEventListener('click', this.hideRowContextMenu);
   },
   
   methods: {
@@ -421,6 +462,28 @@ export default {
         'Partial': 'result-partial'
       };
       return statusMap[status] || 'result-unknown';
+    },
+    onRowContextMenu(event, result) {
+      this.rowContextMenu = {
+        visible: true,
+        x: event.clientX,
+        y: event.clientY,
+        result: result
+      };
+    },
+    hideRowContextMenu() {
+      if (!this.rowContextMenu.visible) return;
+      this.rowContextMenu.visible = false;
+    },
+    openFollowupFromMenu() {
+      if (!this.rowContextMenu.result) return;
+      this.followupTargetResult = this.rowContextMenu.result;
+      this.showFollowupModal = true;
+      this.hideRowContextMenu();
+    },
+    closeFollowupModal() {
+      this.showFollowupModal = false;
+      this.followupTargetResult = null;
     },
     
     // Navigate back
@@ -1327,6 +1390,34 @@ export default {
   transform: scale(1.01);
 }
 
+.row-context-menu {
+  position: fixed;
+  z-index: 2100;
+  min-width: 180px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.24);
+  padding: 8px;
+}
+
+.row-context-menu-item {
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #0f172a;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.row-context-menu-item:hover {
+  background: #f1f5f9;
+}
+
 .item-text {
   font-size: 14px;
   color: #2d333a;
@@ -1568,6 +1659,19 @@ export default {
 }
 
 .dark-theme .result-row:hover {
+  background: #3a3a3f;
+}
+
+.dark-theme .row-context-menu {
+  background: #343541;
+  border-color: #4d4d4f;
+}
+
+.dark-theme .row-context-menu-item {
+  color: #e5e7eb;
+}
+
+.dark-theme .row-context-menu-item:hover {
   background: #3a3a3f;
 }
 
